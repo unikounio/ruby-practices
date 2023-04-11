@@ -1,0 +1,51 @@
+#!/usr/bin/ruby
+
+require 'optparse'
+opt = OptionParser.new
+
+opt.on("-m [MONTH]") do |month|
+  if month =~ /^\d+$/
+    @month = month.to_i
+  else
+    raise
+  end
+end
+
+opt.on("-y [YEAR]") do |year|
+  if year =~ /^\d+$/
+    @year = year.to_i if year.to_i.to_s == year
+  else
+    raise
+  end
+end
+
+opt.parse!(ARGV)
+
+@year ||= Time.now.year
+@month ||= Time.now.month
+
+puts "      #{@month}月 #{@year}        "
+puts "日 月 火 水 木 金 土  "
+
+require "date"
+
+(Date.new(@year, @month, 1)..Date.new(@year, @month, -1)).each do |date|
+  if date.day == 1
+    print " " + " " * 4 * date.wday
+  elsif (2..9).include?(date.day)
+    print " "
+  end
+
+  if date == Date.today
+    print "\e[7m#{date.day}\e[0m"
+  else
+    print date.day
+  end
+
+  if date.saturday?
+    puts ""
+  else
+    print "  "
+  end
+end
+puts ""

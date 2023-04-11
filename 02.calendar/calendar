@@ -1,98 +1,51 @@
 #!/usr/bin/ruby
 
-# オプションの定義
 require 'optparse'
 opt = OptionParser.new
 
 opt.on("-m [MONTH]") do |month|
-    if /^\d+$/ =~ month # 引数が数字の場合のみインスタンス変数に代入する
-      @month = month.to_i
-    end
+  if month =~ /^\d+$/
+    @month = month.to_i
+  else
+    raise
+  end
 end
 
 opt.on("-y [YEAR]") do |year|
-    if /^\d+$/ =~ year # 引数が数字の場合のみインスタンス変数に代入する
-      @year = year.to_i
-    end
+  if year =~ /^\d+$/
+    @year = year.to_i if year.to_i.to_s == year
+  else
+    raise
+  end
 end
 
-opt.parse!(ARGV) # コマンドライン引数を各オプションに渡し、各インスタンス変数への代入を実行
+opt.parse!(ARGV)
 
-# インスタンス変数が空の場合は現在の年月を代入する
 @year ||= Time.now.year
 @month ||= Time.now.month
 
-#----------------ここから表示部分----------------
 puts "      #{@month}月 #{@year}        "
 puts "日 月 火 水 木 金 土  "
 
-# 指定した月のDateオブジェクトで配列をつくる
-require "date" # Dateクラスの呼び出し
-date_last = Date.new(@year.to_i, @month.to_i, -1) # 指定した月の最終日のDateオブジェクト生成
-day = 1
-dates = []
-while day <= date_last.day
-    dates.push(Date.new(@year.to_i, @month.to_i, day))
-    day += 1
-end
+require "date"
 
-# 今日の日付の色を反転させるメソッド
-def today_reverse_color(date) 
-    if date == Date.today 
-        print "\e[7m#{date.day}\e[0m"
-    else
-        print date.day
-    end
-end
+(Date.new(@year, @month, 1)..Date.new(@year, @month, -1)).each do |date|
+  if date.day == 1
+    print " " + " " * 4 * date.wday
+  elsif (2..9).include?(date.day)
+    print " "
+  end
 
-# 日付を土曜日で改行しながら表示する
-dates.each do |date|
-    if date.day == 1 # 月初の曜日合わせ
-        case 
-        when date.sunday?
-            print " "
-            today_reverse_color(date)
-            print "  "
-        when date.monday?
-            print " " * 5
-            today_reverse_color(date)
-            print "  "
-        when date.tuesday?
-            print " " * 9
-            today_reverse_color(date)
-            print "  "
-        when date.wednesday?
-            print " " * 13
-            today_reverse_color(date)
-            print "  "
-        when date.thursday?
-            print " " * 17
-            today_reverse_color(date)
-            print "  "
-        when date.friday?
-            print " " * 21
-            today_reverse_color(date)
-            print "  "
-        when date.saturday?
-            print " " * 25
-            today_reverse_color(date)
-            puts ""
-        end        
-    elsif (2..9).include?(date.day) # 2~9は十の位にスペースが必要
-        print " "
-        today_reverse_color(date)
-        if date.saturday?
-            puts ""
-        else
-            print "  "
-        end
-    else
-        today_reverse_color(date)
-        if date.saturday?
-            puts ""
-        else
-            print "  "
-        end
-    end
+  if date == Date.today
+    print "\e[7m#{date.day}\e[0m"
+  else
+    print date.day
+  end
+
+  if date.saturday?
+    puts ""
+  else
+    print "  "
+  end
 end
 puts ""

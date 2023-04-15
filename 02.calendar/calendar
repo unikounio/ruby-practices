@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
+require "date"
+require "optparse"
 
-require 'optparse'
 opt = OptionParser.new
 
 opt.on("-m [MONTH]") do |month|
@@ -13,7 +14,7 @@ end
 
 opt.on("-y [YEAR]") do |year|
   if year =~ /^\d+$/
-    @year = year.to_i if year.to_i.to_s == year
+    @year = year.to_i
   else
     raise
   end
@@ -27,25 +28,19 @@ opt.parse!(ARGV)
 puts "      #{@month}月 #{@year}        "
 puts "日 月 火 水 木 金 土  "
 
-require "date"
+print "#{' ' * 3 * Date.new(@year, @month, 1).wday}"
 
 (Date.new(@year, @month, 1)..Date.new(@year, @month, -1)).each do |date|
-  if date.day == 1
-    print " " + " " * 4 * date.wday
-  elsif (2..9).include?(date.day)
-    print " "
-  end
-
   if date == Date.today
-    print "\e[7m#{date.day}\e[0m"
+    print "\e[7m#{date.day}\e[0m".rjust(2,' ')
   else
-    print date.day
+    print "#{date.day}".rjust(2,' ')
   end
 
   if date.saturday?
     puts ""
   else
-    print "  "
+    print " "
   end
 end
 puts ""

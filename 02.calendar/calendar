@@ -5,19 +5,13 @@ require "optparse"
 opt = OptionParser.new
 
 opt.on("-m [MONTH]") do |month|
-  if month =~ /^\d+$/
-    @month = month.to_i
-  else
-    raise
-  end
+  raise unless month =~ /^\d+$/
+  @month = month.to_i
 end
 
 opt.on("-y [YEAR]") do |year|
-  if year =~ /^\d+$/
-    @year = year.to_i
-  else
-    raise
-  end
+  raise unless year =~ /^\d+$/
+  @year = year.to_i
 end
 
 opt.parse!(ARGV)
@@ -26,15 +20,15 @@ opt.parse!(ARGV)
 @month ||= Time.now.month
 
 puts "      #{@month}月 #{@year}        "
-puts "日 月 火 水 木 金 土  "
+puts "日 月 火 水 木 金 土"
 
-print "#{' ' * 3 * Date.new(@year, @month, 1).wday}"
+print ' ' * 3 * Date.new(@year, @month, 1).wday
 
 (Date.new(@year, @month, 1)..Date.new(@year, @month, -1)).each do |date|
   if date == Date.today
     print "\e[7m#{date.day}\e[0m".rjust(2,' ')
   else
-    print "#{date.day}".rjust(2,' ')
+    print date.day.to_s.rjust(2,' ')
   end
 
   if date.saturday?

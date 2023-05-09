@@ -26,9 +26,7 @@ end
 def hankaku_ljust(string, width, padding = ' ')
   convert_hankaku = 0
 
-  string.each_char do |char|
-    convert_hankaku += char.bytesize - 2 if char.bytesize > 1
-  end
+  convert_hankaku = string.each_char.sum { |char| (char.bytesize > 1) ? (char.bytesize - 2) : 0 }
 
   string.ljust(width - convert_hankaku, padding)
 end

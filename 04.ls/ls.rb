@@ -33,13 +33,17 @@ def hankaku_ljust(string, width, padding = ' ')
   string.ljust(width - convert_hankaku, padding)
 end
 
-columns = each_slice_into_rows(entries_normal, 3)
+MAX_COLUMS = 3
+
+columns = each_slice_into_rows(entries_normal, MAX_COLUMS)
 
 padded_columns = pad_to_max_length(columns)
 
+WIDTH = 18
+
 padded_columns.transpose.each do |row|
   row.each do |entry|
-    print hankaku_ljust(entry, 18)
+    print hankaku_ljust(entry, WIDTH)
   end
 
   puts

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-
+require "debug"
 argument = ARGV[0] || '.'
 
 if File.directory? argument
@@ -39,10 +39,4 @@ padded_columns = pad_to_max_length(columns)
 
 WIDTH = 18
 
-padded_columns.transpose.each do |row|
-  row.each do |entry|
-    print hankaku_ljust(entry, WIDTH)
-  end
-
-  puts
-end
+padded_columns.transpose.each {|row| puts row.map {|entry| hankaku_ljust(entry, WIDTH) }.join }

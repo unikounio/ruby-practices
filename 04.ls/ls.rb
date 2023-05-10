@@ -1,13 +1,12 @@
-require "debug"
-
 # frozen_string_literal: true
-require "optparse"
+
+require 'optparse'
 
 opt = OptionParser.new
 
 option = []
 
-opt.on("-a") {option << "-a" }
+opt.on('-a') { option << '-a' } # 今後のオプション追加に備えて、['-a']の代入ではなく空配列への追加という形をとっている。
 
 opt.parse!(ARGV)
 
@@ -28,18 +27,16 @@ def each_slice_into_rows(array, max_columns) = array.each_slice((array.length.to
 def pad_to_max_length(arrays) = arrays.map { |array| array + [''] * (arrays.map(&:length).max - array.length) }
 
 def hankaku_ljust(string, width, padding = ' ')
-  convert_hankaku = 0
-
-  convert_hankaku = string.each_char.sum { |char| (char.bytesize > 1) ? (char.bytesize - 2) : 0 }
+  convert_hankaku = string.each_char.sum { |char| char.bytesize > 1 ? (char.bytesize - 2) : 0 }
 
   string.ljust(width - convert_hankaku, padding)
 end
 
-if option.include? "-a"
-  entries_normal = entries
-else
-  entries_normal = entries.reject { |entry| entry.start_with? '.' }
-end
+entries_normal = if option.include? '-a'
+                   entries
+                 else
+                   entries.reject { |entry| entry.start_with? '.' }
+                 end
 
 MAX_COLUMS = 3
 
@@ -49,4 +46,4 @@ padded_columns = pad_to_max_length(columns)
 
 WIDTH = 18
 
-padded_columns.transpose.each {|row| puts row.map {|entry| hankaku_ljust(entry, WIDTH) }.join }
+padded_columns.transpose.each { |row| puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join }

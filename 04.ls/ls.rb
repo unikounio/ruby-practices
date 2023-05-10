@@ -1,5 +1,16 @@
-# frozen_string_literal: true
 require "debug"
+
+# frozen_string_literal: true
+require "optparse"
+
+opt = OptionParser.new
+
+option = []
+
+opt.on("-a") {option << "-a" }
+
+opt.parse!(ARGV)
+
 argument = ARGV[0] || '.'
 
 if File.directory? argument
@@ -12,16 +23,9 @@ end
 
 exit unless File.directory? argument
 
-# -aオプションの場合はこの処理を省く必要がありそうなので、entriesとは別の変数として定義している
-entries_normal = entries.reject { |entry| entry.start_with? '.' }
+def each_slice_into_rows(array, max_columns) = array.each_slice((array.length.to_f / max_columns).ceil).to_a
 
-def each_slice_into_rows(array, max_columns)
-  array.each_slice((array.length.to_f / max_columns).ceil).to_a
-end
-
-def pad_to_max_length(arrays)
-  arrays.map { |array| array + [''] * (arrays.map(&:length).max - array.length) }
-end
+def pad_to_max_length(arrays) = arrays.map { |array| array + [''] * (arrays.map(&:length).max - array.length) }
 
 def hankaku_ljust(string, width, padding = ' ')
   convert_hankaku = 0
@@ -29,6 +33,12 @@ def hankaku_ljust(string, width, padding = ' ')
   convert_hankaku = string.each_char.sum { |char| (char.bytesize > 1) ? (char.bytesize - 2) : 0 }
 
   string.ljust(width - convert_hankaku, padding)
+end
+
+if option.include? "-a"
+  entries_normal = entries
+else
+  entries_normal = entries.reject { |entry| entry.start_with? '.' }
 end
 
 MAX_COLUMS = 3

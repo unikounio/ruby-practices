@@ -19,8 +19,6 @@ end
 
 exit unless File.directory? argument
 
-def each_slice_into_rows(array, max_columns) = array.each_slice((array.length.to_f / max_columns).ceil).to_a
-
 def pad_to_max_length(arrays) = arrays.map { |array| array + [''] * (arrays.map(&:length).max - array.length) }
 
 def hankaku_ljust(string, width, padding = ' ')
@@ -37,10 +35,12 @@ entries_normal = if option.include? '-a'
 
 MAX_COLUMS = 3
 
-columns = each_slice_into_rows(entries_normal, MAX_COLUMS)
+columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMS).ceil).to_a
 
 padded_columns = pad_to_max_length(columns)
 
 WIDTH = 18
 
-padded_columns.transpose.each { |row| puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join }
+padded_columns.transpose.each do |row|
+  puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join
+end

@@ -3,11 +3,8 @@
 require 'optparse'
 
 opt = OptionParser.new
-
 option = []
-
 opt.on('-a') { option << '-a' } # 今後のオプション追加に備えて、['-a']の代入ではなく空配列への追加という形をとっている。
-
 opt.parse!(ARGV)
 
 argument = ARGV[0] || '.'

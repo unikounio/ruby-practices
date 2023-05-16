@@ -2,6 +2,9 @@
 
 require 'optparse'
 
+MAX_COLUMS = 3
+WIDTH = 18
+
 opt = OptionParser.new
 option = []
 opt.on('-a') { option << '-a' } # 今後のオプション追加に備えて、['-a']の代入ではなく空配列への追加という形をとっている。
@@ -36,13 +39,9 @@ entries_normal = if option.include? '-a'
                    entries.reject { |entry| entry.start_with? '.' }
                  end
 
-MAX_COLUMS = 3
-
 columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMS).ceil).to_a
 
 padded_columns = pad_to_max_length(columns)
-
-WIDTH = 18
 
 padded_columns.transpose.each do |row|
   puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join

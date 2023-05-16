@@ -19,11 +19,14 @@ end
 
 exit unless File.directory? argument
 
-def pad_to_max_length(arrays) = arrays.map { |array| array + [''] * (arrays.map(&:length).max - array.length) }
+def pad_to_max_length(columns)
+  columns.map do |column|
+    column + [''] * (columns.map(&:length).max - column.length)
+  end
+end
 
 def hankaku_ljust(string, width, padding = ' ')
   convert_hankaku = string.each_char.sum { |char| char.bytesize > 1 ? (char.bytesize - 2) : 0 }
-
   string.ljust(width - convert_hankaku, padding)
 end
 

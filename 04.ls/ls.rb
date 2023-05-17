@@ -2,18 +2,18 @@
 
 require 'optparse'
 
-MAX_COLUMS = 3
+MAX_COLUMNS = 3
 WIDTH = 18
 
 opt = OptionParser.new
-@option = []
-opt.on('-a') { @option << '-a' } # 今後のオプション追加に備えて、['-a']の代入ではなく空配列への追加という形をとっている。
+option = []
+opt.on('-a') { option << '-a' } # 今後のオプション追加に備えて、['-a']の代入ではなく空配列への追加という形をとっている。
 opt.parse!(ARGV)
 
 argument = ARGV[0] || '.'
 
 if File.directory? argument
-  @entries = Dir.entries(argument).sort
+  entries = Dir.entries(argument).sort
 elsif File.file? argument
   puts ARGV[0]
 else
@@ -22,11 +22,11 @@ end
 
 exit unless File.directory? argument
 
-def normalize_entries
-  if @option.include? '-a'
-    @entries
+def normalize_entries(option, entries)
+  if option.include? '-a'
+    entries
   else
-    @entries.reject { |entry| entry.start_with? '.' }
+    entries.reject { |entry| entry.start_with? '.' }
   end
 end
 
@@ -35,9 +35,9 @@ def hankaku_ljust(string, width, padding = ' ')
   string.ljust(width - convert_hankaku, padding)
 end
 
-entries_normal = normalize_entries
+entries_normal = normalize_entries(option, entries)
 
-columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMS).ceil).to_a
+columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMNS).ceil).to_a
 
 padded_columns = columns.map { |column| column + [''] * (columns.map(&:length).max - column.length) }
 

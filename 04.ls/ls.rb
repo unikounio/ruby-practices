@@ -38,11 +38,8 @@ end
 visible_entries = exclude_hidden_entries(option, entries)
 
 columns = visible_entries.each_slice((visible_entries.length.to_f / MAX_COLUMNS).ceil).to_a
-
 max_length = columns.map(&:length).max
-
 padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
-
 padded_columns.transpose.each do |row|
   puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join
 end

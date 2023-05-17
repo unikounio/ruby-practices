@@ -39,7 +39,9 @@ entries_normal = normalize_entries(option, entries)
 
 columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMNS).ceil).to_a
 
-padded_columns = columns.map { |column| column + [''] * (columns.map(&:length).max - column.length) }
+max_length = columns.map(&:length).max
+
+padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
 
 padded_columns.transpose.each do |row|
   puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join

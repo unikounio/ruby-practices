@@ -22,7 +22,7 @@ end
 
 exit unless File.directory? argument
 
-def normalize_entries(option, entries)
+def exclude_hidden_entries(option, entries)
   if option.include? '-a'
     entries
   else
@@ -35,9 +35,9 @@ def hankaku_ljust(string, width, padding = ' ')
   string.ljust(width - convert_hankaku, padding)
 end
 
-entries_normal = normalize_entries(option, entries)
+visible_entries = exclude_hidden_entries(option, entries)
 
-columns = entries_normal.each_slice((entries_normal.length.to_f / MAX_COLUMNS).ceil).to_a
+columns = visible_entries.each_slice((visible_entries.length.to_f / MAX_COLUMNS).ceil).to_a
 
 max_length = columns.map(&:length).max
 

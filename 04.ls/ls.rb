@@ -12,21 +12,12 @@ opt.parse!(ARGV)
 
 argument = ARGV[0] || '.'
 
-if File.directory? argument
-  entries = Dir.entries(argument).sort
-elsif File.file? argument
-  puts ARGV[0]
-else
-  puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
-end
-
-exit unless File.directory? argument
-
-def exclude_hidden_entries(option, entries)
+def process_directory_entries(option, argument)
   if option.include? '-a'
-    entries
+    Dir.entries(argument).sort
   else
-    entries.reject { |entry| entry.start_with? '.' }
+    raw_entries = Dir.entries(argument).sort
+    raw_entries.reject { |entry| entry.start_with? '.' }
   end
 end
 
@@ -35,9 +26,17 @@ def hankaku_ljust(string, width, padding = ' ')
   string.ljust(width - convert_hankaku, padding)
 end
 
-visible_entries = exclude_hidden_entries(option, entries)
+if File.directory? argument
+  entries = process_directory_entries(option, argument)
+elsif File.file? argument
+  puts ARGV[0]
+else
+  puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
+end
 
-columns = visible_entries.each_slice((visible_entries.length.to_f / MAX_COLUMNS).ceil).to_a
+exit unless File.directory? argument
+
+columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
 max_length = columns.map(&:length).max
 padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
 padded_columns.transpose.each do |row|

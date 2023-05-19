@@ -5,12 +5,40 @@ require 'optparse'
 MAX_COLUMNS = 3
 WIDTH = 18
 
-opt = OptionParser.new
-option = []
-opt.on('-r') { option << '-r' } # 今後のオプション追加に備えて、['-r']の代入ではなく空配列への追加という形をとっている。
-opt.parse!(ARGV)
+def main
+  option = define_option
 
-argument = ARGV[0] || '.'
+  argument = ARGV[0] || '.'
+
+  entries = categorize_entry(option, argument)
+
+  exit unless File.directory? argument
+
+  columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
+  max_length = columns.map(&:length).max
+  padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
+  padded_columns.transpose.each do |row|
+    puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join
+  end
+end
+
+def define_option
+  opt = OptionParser.new
+  option = []
+  opt.on('-r') { option << '-r' } # 今後のオプション追加に備えて、['-r']の代入ではなく空配列への追加という形をとっている。
+  opt.parse!(ARGV)
+  option
+end
+
+def categorize_entry(option, argument)
+  if File.directory? argument
+    filter_directory_entries(option, argument)
+  elsif File.file? argument
+    puts ARGV[0]
+  else
+    puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
+  end
+end
 
 def filter_directory_entries(option, argument)
   raw_entries = Dir.entries(argument).sort
@@ -23,19 +51,4 @@ def hankaku_ljust(string, width, padding = ' ')
   string.ljust(width - convert_hankaku, padding)
 end
 
-if File.directory? argument
-  entries = filter_directory_entries(option, argument)
-elsif File.file? argument
-  puts ARGV[0]
-else
-  puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
-end
-
-exit unless File.directory? argument
-
-columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
-max_length = columns.map(&:length).max
-padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
-padded_columns.transpose.each do |row|
-  puts row.map { |entry| hankaku_ljust(entry, WIDTH) }.join
-end
+main

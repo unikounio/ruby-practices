@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'debug'
 
 MAX_COLUMNS = 3
 WIDTH = 18
@@ -10,8 +11,10 @@ def main
 
   argument = ARGV[0] || '.'
 
-  if File.directory? argument
-    option.include?('-l') ? list(argument) : display_directory_entries(argument)
+  if option.include?('-l')
+    list(argument)
+  elsif File.directory? argument
+    display_directory_entries(argument)
   elsif File.file? argument
     puts ARGV[0]
   else
@@ -28,12 +31,34 @@ def define_option
 end
 
 def list(argument)
+  entries_stat = create_entries_stat(argument)
+  puts "合計 #{calculate_blocks(entries_stat)}" if File.directory? argument
+  #エントリーごとに詳細情報表示。末尾改行
+end
+
+def create_entries_stat(argument)
+  if File.directory? argument
+    entries = filter_directory_entries(argument)
+    entries.map { |entry| File::Stat.new(argument + '/' + entry) }
+  elsif File.file? argument
+    [File::Stat.new(argument)]
+  else
+    puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
+    exit
+  end
+end
+
+def calculate_blocks(entries_stat)
+  entries_stat.each.sum { |entry_stat| (entry_stat.blksize.to_f / 1024 ).ceil }
+end
+
+def filter_directory_entries(argument)
+  raw_entries = Dir.entries(argument).sort
+  raw_entries.reject { |entry| entry.start_with? '.' }
 end
 
 def display_directory_entries(argument)
-  raw_entries = Dir.entries(argument).sort
-  entries = raw_entries.reject { |entry| entry.start_with? '.' }
-
+  entries = filter_directory_entries(argument)
   columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
   max_length = columns.map(&:length).max
   padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }

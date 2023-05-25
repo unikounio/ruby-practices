@@ -3,6 +3,7 @@
 require 'optparse'
 require 'debug'
 
+BLOCK_SIZE = 1024
 MAX_COLUMNS = 3
 WIDTH = 18
 
@@ -49,11 +50,11 @@ def create_entries_stat(argument)
 end
 
 def calculate_blocks(entries_stat)
-  entries_stat.each.sum { |entry_stat| (entry_stat.blksize.to_f / 1024 ).ceil }
+  entries_stat.each.sum { |entry_stat| (entry_stat.blksize.to_f / BLOCK_SIZE ).ceil }
 end
 
 def filter_directory_entries(argument)
-  raw_entries = Dir.entries(argument).sort
+  raw_entries = Dir.entries(argument).sort { |a, b| a.downcase <=> b.downcase }
   raw_entries.reject { |entry| entry.start_with? '.' }
 end
 

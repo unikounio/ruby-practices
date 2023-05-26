@@ -3,7 +3,7 @@
 require 'optparse'
 require 'debug'
 
-BLOCK_SIZE = 1024
+BLOCK_SIZE_ADJUSTMENT = 2
 MAX_COLUMNS = 3
 WIDTH = 18
 
@@ -32,25 +32,34 @@ def define_option
 end
 
 def list(argument)
-  entries_stat = create_entries_stat(argument)
-  puts "合計 #{calculate_blocks(entries_stat)}" if File.directory? argument
-  #エントリーごとに詳細情報表示。末尾改行
-end
-
-def create_entries_stat(argument)
   if File.directory? argument
     entries = filter_directory_entries(argument)
-    entries.map { |entry| File::Stat.new(argument + '/' + entry) }
+    entries_path = entries.map{ |entry| argument + '/' + entry }
   elsif File.file? argument
-    [File::Stat.new(argument)]
+    entries = [argument]
   else
     puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
     exit
   end
+
+  if File.directory? argument
+    total_blocks = entries_path.each.sum { |entry_path| File.lstat(entry_path).blocks / BLOCK_SIZE_ADJUSTMENT }
+    puts "合計 #{total_blocks}"
+  end
+
+  entries_path.each do |entry_path|
+    print "#{analyze_mode(entry_path)} "
+    print "#{File.lstat(entry_path).nlink} "
+    print "#{File.lstat(entry_path).uid} "
+    print "#{File.lstat(entry_path).gid} "
+    print "#{File.lstat(entry_path).size} "
+    print "#{File.lstat(entry_path).mtime} "
+    puts File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
+  end
 end
 
-def calculate_blocks(entries_stat)
-  entries_stat.each.sum { |entry_stat| (entry_stat.blksize.to_f / BLOCK_SIZE ).ceil }
+def analyze_mode(entry)
+  File.lstat(entry).mode
 end
 
 def filter_directory_entries(argument)

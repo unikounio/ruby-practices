@@ -3,7 +3,6 @@
 require 'optparse'
 require 'etc'
 require 'date'
-require 'debug'
 
 BLOCK_SIZE_ADJUSTMENT = 2
 MAX_COLUMNS = 3
@@ -49,15 +48,30 @@ def list(argument)
     puts "合計 #{total_blocks}"
   end
 
-  entry_paths.each do |entry_path|
-    entry_lstat = File.lstat(entry_path)
-    print "#{convert_mode(entry_lstat)} "
-    print "#{entry_lstat.nlink} "
-    print "#{convert_uid(entry_lstat)} "
-    print "#{convert_gid(entry_lstat)} "
-    print "#{entry_lstat.size} "
-    print "#{convert_mtime(entry_lstat)} "
-    puts File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
+  entry_modes = entry_paths.map { |entry_path| convert_mode(File.lstat(entry_path)) }
+
+  entry_nlinks = entry_paths.map { |entry_path| File.lstat(entry_path).nlink.to_s }
+  padded_entry_nlinks = entry_nlinks.map { |entry_nlink| entry_nlink.rjust(entry_nlinks.map(&:length).max) }
+
+  entry_uids = entry_paths.map { |entry_path| convert_uid(File.lstat(entry_path)) }
+  padded_entry_uids = entry_uids.map { |entry_uid| entry_uid.ljust(entry_uids.map(&:length).max) }
+
+  entry_gids = entry_paths.map { |entry_path| convert_gid(File.lstat(entry_path)) }
+  padded_entry_gids = entry_gids.map { |entry_gid| entry_gid.ljust(entry_gids.map(&:length).max) }
+
+  entry_sizes = entry_paths.map { |entry_path| File.lstat(entry_path).size.to_s }
+  padded_entry_sizes = entry_sizes.map { |entry_size| entry_size.rjust(entry_sizes.map(&:length).max) }
+
+  entry_dates = convert_dates(entry_paths)
+
+  entry_basenames = entry_paths.map do |entry_path|
+    File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
+  end
+
+  entry_infomations = [entry_modes, padded_entry_nlinks, padded_entry_uids, padded_entry_gids, padded_entry_sizes, entry_dates, entry_basenames]
+
+  entry_infomations.transpose.each do |entry_infomation|
+    puts entry_infomation.join(' ')
   end
 end
 
@@ -98,7 +112,6 @@ def convert_special_right(mode)
     mode = mode.gsub(/-$/, 'S')
     mode = mode.gsub(/x$/, 's')
   end
-
   mode.gsub(/^(.)\d/, '\1')
 end
 
@@ -145,13 +158,18 @@ def convert_gid(entry_lstat)
   Etc.getgrgid(group_id).name
 end
 
-def convert_mtime(entry_lstat)
-  mtime = entry_lstat.mtime
-  if Date.parse(mtime.to_s) > Date.today << 6
-    mtime.strftime('%b %d %H:%M')
-  else
-    mtime.strftime('%b %d %Y')
+def convert_dates(entry_paths)
+  entry_mtimes = entry_paths.map { |entry_path| File.lstat(entry_path).mtime }
+  months_and_days = entry_mtimes.map { |entry_mtime| entry_mtime.strftime('%b %e') }
+  years_or_times = entry_mtimes.map do |entry_mtime|
+    if Date.parse(entry_mtime.to_s) > Date.today << 6
+      entry_mtime.strftime('%H:%M')
+    else
+      entry_mtime.strftime('%Y')
+    end
   end
+  padded_entry_mtimes = [months_and_days, years_or_times.map { |years_or_time| years_or_time.rjust(years_or_times.map(&:length).max) }].transpose
+  padded_entry_mtimes.map { |padded_entry_mtime| padded_entry_mtime.join(' ') }
 end
 
 def display_directory_entries(argument)

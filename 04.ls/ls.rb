@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'etc'
+require 'date'
 require 'debug'
 
 BLOCK_SIZE_ADJUSTMENT = 2
@@ -34,35 +36,40 @@ end
 def list(argument)
   if File.directory? argument
     entries = filter_directory_entries(argument)
-    entries_path = entries.map{ |entry| argument + '/' + entry }
+    entry_paths = entries.map { |entry| File.join(argument, entry) }
   elsif File.file? argument
-    entries = [argument]
+    entry_paths = [argument]
   else
     puts "ls: \'#{ARGV[0]}\' にアクセスできません: そのようなファイルやディレクトリはありません"
     exit
   end
 
   if File.directory? argument
-    total_blocks = entries_path.each.sum { |entry_path| File.lstat(entry_path).blocks / BLOCK_SIZE_ADJUSTMENT }
+    total_blocks = entry_paths.each.sum { |entry_path| File.lstat(entry_path).blocks / BLOCK_SIZE_ADJUSTMENT }
     puts "合計 #{total_blocks}"
   end
 
-  entries_path.each do |entry_path|
-    print "#{convert_mode(entry_path)} "
-    print "#{File.lstat(entry_path).nlink} "
-    print "#{File.lstat(entry_path).uid} "
-    print "#{File.lstat(entry_path).gid} "
-    print "#{File.lstat(entry_path).size} "
-    print "#{File.lstat(entry_path).mtime} "
+  entry_paths.each do |entry_path|
+    entry_lstat = File.lstat(entry_path)
+    print "#{convert_mode(entry_lstat)} "
+    print "#{entry_lstat.nlink} "
+    print "#{convert_uid(entry_lstat)} "
+    print "#{convert_gid(entry_lstat)} "
+    print "#{entry_lstat.size} "
+    print "#{convert_mtime(entry_lstat)} "
     puts File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
   end
 end
 
-def convert_mode(entry_path)
-  mode = File.lstat(entry_path).mode.to_s(8)
+def filter_directory_entries(argument)
+  raw_entries = Dir.entries(argument).sort_by(&:downcase)
+  raw_entries.reject { |entry| entry.start_with? '.' }
+end
+
+def convert_mode(entry_lstat)
+  mode = entry_lstat.mode.to_s(8)
   mode = convert_filetype(mode)
-  mode = convert_right(mode)
-  mode
+  convert_right(mode)
 end
 
 def convert_filetype(mode)
@@ -73,20 +80,18 @@ def convert_filetype(mode)
   mode = mode.gsub(/^06/, 'b')
   mode = mode.gsub(/^10/, '-')
   mode = mode.gsub(/^12/, 'l')
-  mode = mode.gsub(/^14/, 's')
-  mode
+  mode.gsub(/^14/, 's')
 end
 
 def convert_right(mode)
   mode = convert_user_right(mode)
   mode = convert_group_right(mode)
   mode = convert_etc_right(mode)
-  mode = convert_special_right(mode)
-  mode
+  convert_special_right(mode)
 end
 
 def convert_special_right(mode)
-  if /^(.)1/ =~ mode
+  if /^(.)1/.match?(mode)
     mode = mode.gsub(/-$/, 'T')
     mode = mode.gsub(/x$/, 't')
   elsif /^(.)2/ =~ mode || /^(.)3/ =~ mode
@@ -94,8 +99,7 @@ def convert_special_right(mode)
     mode = mode.gsub(/x$/, 's')
   end
 
-  mode = mode.gsub(/^(.)\d/, '\1')
-  mode
+  mode.gsub(/^(.)\d/, '\1')
 end
 
 def convert_user_right(mode)
@@ -106,8 +110,7 @@ def convert_user_right(mode)
   mode = mode.gsub(/4(..)$/, 'r--\1')
   mode = mode.gsub(/5(..)$/, 'r-x\1')
   mode = mode.gsub(/6(..)$/, 'rw-\1')
-  mode = mode.gsub(/7(..)$/, 'rwx\1')
-  mode
+  mode.gsub(/7(..)$/, 'rwx\1')
 end
 
 def convert_group_right(mode)
@@ -118,8 +121,7 @@ def convert_group_right(mode)
   mode = mode.gsub(/4(.)$/, 'r--\1')
   mode = mode.gsub(/5(.)$/, 'r-x\1')
   mode = mode.gsub(/6(.)$/, 'rw-\1')
-  mode = mode.gsub(/7(.)$/, 'rwx\1')
-  mode
+  mode.gsub(/7(.)$/, 'rwx\1')
 end
 
 def convert_etc_right(mode)
@@ -130,12 +132,26 @@ def convert_etc_right(mode)
   mode = mode.gsub(/4$/, 'r--')
   mode = mode.gsub(/5$/, 'r-x')
   mode = mode.gsub(/6$/, 'rw-')
-  mode = mode.gsub(/7$/, 'rwx')
+  mode.gsub(/7$/, 'rwx')
 end
 
-def filter_directory_entries(argument)
-  raw_entries = Dir.entries(argument).sort { |a, b| a.downcase <=> b.downcase }
-  raw_entries.reject { |entry| entry.start_with? '.' }
+def convert_uid(entry_lstat)
+  user_id = entry_lstat.uid
+  Etc.getpwuid(user_id).name
+end
+
+def convert_gid(entry_lstat)
+  group_id = entry_lstat.gid
+  Etc.getgrgid(group_id).name
+end
+
+def convert_mtime(entry_lstat)
+  mtime = entry_lstat.mtime
+  if Date.parse(mtime.to_s) > Date.today << 6
+    mtime.strftime('%b %d %H:%M')
+  else
+    mtime.strftime('%b %d %Y')
+  end
 end
 
 def display_directory_entries(argument)

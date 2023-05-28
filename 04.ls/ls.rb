@@ -5,6 +5,7 @@ require 'etc'
 require 'date'
 
 BLOCK_SIZE_ADJUSTMENT = 2
+MODE_LENGTH = 6
 MAX_COLUMNS = 3
 WIDTH = 18
 
@@ -104,7 +105,7 @@ def filter_directory_entries(argument)
 end
 
 def convert_filetype(mode)
-  mode = mode.rjust(6, '0')
+  mode = mode.rjust(MODE_LENGTH, '0')
   mode = mode.gsub(/^01/, 'p')
   mode = mode.gsub(/^02/, 'c')
   mode = mode.gsub(/^04/, 'd')
@@ -158,7 +159,7 @@ def convert_special_right(mode)
   if /^(.)1/.match?(mode)
     mode = mode.gsub(/-$/, 'T')
     mode = mode.gsub(/x$/, 't')
-  elsif /^(.)2/ =~ mode || /^(.)3/ =~ mode
+  elsif /^(.)2/.match?(mode) || /^(.)3/.match?(mode)
     mode = mode.gsub(/-$/, 'S')
     mode = mode.gsub(/x$/, 's')
   end

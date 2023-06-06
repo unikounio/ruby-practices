@@ -140,7 +140,7 @@ def convert_special_right(mode)
   case mode.match(/^.(\d)/)[1]
   when '1'
     mode.gsub!(/.$/, { '-' => 'T', 'x' => 't' })
-  when '2' || '3'
+  when '2', '3'
     mode.gsub!(/.$/, { '-' => 'S', 'x' => 's' })
   end
   mode.gsub(/^(.)\d/, '\1')

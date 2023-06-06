@@ -3,6 +3,7 @@
 require 'optparse'
 require 'etc'
 require 'date'
+require 'debug'
 
 BLOCK_SIZE_ADJUSTMENT = 2
 MODE_LENGTH = 6
@@ -106,62 +107,41 @@ end
 
 def convert_filetype(mode)
   mode = mode.rjust(MODE_LENGTH, '0')
-  mode = mode.gsub(/^01/, 'p')
-  mode = mode.gsub(/^02/, 'c')
-  mode = mode.gsub(/^04/, 'd')
-  mode = mode.gsub(/^06/, 'b')
-  mode = mode.gsub(/^10/, '-')
-  mode = mode.gsub(/^12/, 'l')
-  mode.gsub(/^14/, 's')
+  filetype = {
+    '01' => 'p',
+    '02' => 'c',
+    '04' => 'd',
+    '06' => 'b',
+    '10' => '-',
+    '12' => '1',
+    '14' => 's'
+  }
+  mode.gsub!(/^\d{2}/, filetype)
 end
 
 def convert_right(mode)
-  mode = convert_user_right(mode)
-  mode = convert_group_right(mode)
-  mode = convert_etc_right(mode)
+  right_pattern = {
+    '0' => '---',
+    '1' => '--x',
+    '2' => '-w-',
+    '3' => '-wx',
+    '4' => 'r--',
+    '5' => 'r-x',
+    '6' => 'rw-',
+    '7' => 'rwx'
+  }
+  mode.gsub!(/\d{3}$/) do |raw_right|
+    raw_right.gsub(/\d/, right_pattern)
+  end
   convert_special_right(mode)
 end
 
-def convert_user_right(mode)
-  mode = mode.gsub(/0(..)$/, '---\1')
-  mode = mode.gsub(/1(..)$/, '--x\1')
-  mode = mode.gsub(/2(..)$/, '-w-\1')
-  mode = mode.gsub(/3(..)$/, '-wx\1')
-  mode = mode.gsub(/4(..)$/, 'r--\1')
-  mode = mode.gsub(/5(..)$/, 'r-x\1')
-  mode = mode.gsub(/6(..)$/, 'rw-\1')
-  mode.gsub(/7(..)$/, 'rwx\1')
-end
-
-def convert_group_right(mode)
-  mode = mode.gsub(/0(.)$/, '---\1')
-  mode = mode.gsub(/1(.)$/, '--x\1')
-  mode = mode.gsub(/2(.)$/, '-w-\1')
-  mode = mode.gsub(/3(.)$/, '-wx\1')
-  mode = mode.gsub(/4(.)$/, 'r--\1')
-  mode = mode.gsub(/5(.)$/, 'r-x\1')
-  mode = mode.gsub(/6(.)$/, 'rw-\1')
-  mode.gsub(/7(.)$/, 'rwx\1')
-end
-
-def convert_etc_right(mode)
-  mode = mode.gsub(/0$/, '---')
-  mode = mode.gsub(/1$/, '--x')
-  mode = mode.gsub(/2$/, '-w-')
-  mode = mode.gsub(/3$/, '-wx')
-  mode = mode.gsub(/4$/, 'r--')
-  mode = mode.gsub(/5$/, 'r-x')
-  mode = mode.gsub(/6$/, 'rw-')
-  mode.gsub(/7$/, 'rwx')
-end
-
 def convert_special_right(mode)
-  if /^(.)1/.match?(mode)
-    mode = mode.gsub(/-$/, 'T')
-    mode = mode.gsub(/x$/, 't')
-  elsif /^(.)2/.match?(mode) || /^(.)3/.match?(mode)
-    mode = mode.gsub(/-$/, 'S')
-    mode = mode.gsub(/x$/, 's')
+  case mode.match(/^.(\d)/)[1]
+  when '1'
+    mode.gsub!(/.$/, { '-' => 'T', 'x' => 't' })
+  when '2' || '3'
+    mode.gsub!(/.$/, { '-' => 'S', 'x' => 's' })
   end
   mode.gsub(/^(.)\d/, '\1')
 end

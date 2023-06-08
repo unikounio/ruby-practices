@@ -3,7 +3,6 @@
 require 'optparse'
 require 'etc'
 require 'date'
-require 'debug'
 
 BLOCK_SIZE_ADJUSTMENT = 2
 MODE_LENGTH = 6
@@ -55,8 +54,9 @@ end
 def display_long_entries(entry_paths)
   entry_lstats = entry_paths.map { |entry_path| File.lstat(entry_path) }
   entry_modes = entry_lstats.map do |entry_lstat|
-    entry_mode = convert_filetype(entry_lstat.mode.to_s(8))
-    convert_right(entry_mode)
+    raw_mode = entry_lstat.mode.to_s(8)
+    mode = raw_mode.rjust(MODE_LENGTH, '0')
+    "#{convert_filetype(mode)}#{convert_right(mode)}"
   end
   entry_basenames = entry_paths.map do |entry_path|
     File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
@@ -106,7 +106,6 @@ def filter_directory_entries(argument)
 end
 
 def convert_filetype(mode)
-  mode = mode.rjust(MODE_LENGTH, '0')
   filetype = {
     '01' => 'p',
     '02' => 'c',
@@ -116,7 +115,7 @@ def convert_filetype(mode)
     '12' => '1',
     '14' => 's'
   }
-  mode.gsub!(/^\d{2}/, filetype)
+  mode.gsub(/^\d{2}/, filetype)[/^./]
 end
 
 def convert_right(mode)
@@ -130,20 +129,22 @@ def convert_right(mode)
     '6' => 'rw-',
     '7' => 'rwx'
   }
-  mode.gsub!(/\d{3}$/) do |raw_right|
+  right = mode.gsub(/\d{3}$/) do |raw_right|
     raw_right.gsub(/\d/, right_pattern)
   end
-  convert_special_right(mode)
+  processed_right = convert_special_right(right)
+  processed_right[/^.{3}(.+)/, 1]
 end
 
-def convert_special_right(mode)
-  case mode.match(/^.(\d)/)[1]
+def convert_special_right(right)
+  case right[/^..(\d)/, 1]
   when '1'
-    mode.gsub!(/.$/, { '-' => 'T', 'x' => 't' })
+    right.gsub(/.$/, { '-' => 'T', 'x' => 't' })
   when '2', '3'
-    mode.gsub!(/.$/, { '-' => 'S', 'x' => 's' })
+    right.gsub(/.$/, { '-' => 'S', 'x' => 's' })
+  else
+    right
   end
-  mode.gsub(/^(.)\d/, '\1')
 end
 
 def shape_entry_mtimes(entry_lstats)

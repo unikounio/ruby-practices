@@ -3,8 +3,6 @@
 require 'optparse'
 require 'etc'
 require 'date'
-require 'debug'
-
 
 BLOCK_SIZE_ADJUSTMENT = 2
 MODE_LENGTH = 6
@@ -64,8 +62,9 @@ def display_long_entries(entry_paths)
   entry_basenames = entry_paths.map do |entry_path|
     File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
   end
-  entry_statuses = [entry_modes, shape_entry_nlinks(entry_lstats), shape_entry_uids(entry_lstats), shape_entry_gids(entry_lstats),
-                    shape_entry_sizes(entry_lstats), shape_entry_mtimes(entry_lstats), entry_basenames]
+  entry_statuses =
+    [entry_modes, shape_entry_nlinks(entry_lstats), shape_entry_uids(entry_lstats), shape_entry_gids(entry_lstats),
+     shape_entry_sizes(entry_lstats), shape_entry_mtimes(entry_lstats), entry_basenames]
   entry_statuses.transpose.each do |long_entry|
     puts long_entry.join(' ')
   end

@@ -54,9 +54,8 @@ end
 def display_long_entries(entry_paths)
   entry_lstats = entry_paths.map { |entry_path| File.lstat(entry_path) }
   entry_modes = entry_lstats.map do |entry_lstat|
-    raw_mode = entry_lstat.mode.to_s(8)
-    mode = raw_mode.rjust(MODE_LENGTH, '0')
-    "#{convert_filetype(mode)}#{convert_right(mode)}"
+    mode = entry_lstat.mode.to_s(8).rjust(MODE_LENGTH, '0')
+    "#{convert_filetype(mode)}#{convert_permissions(mode)}"
   end
   entry_basenames = entry_paths.map do |entry_path|
     File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
@@ -115,11 +114,11 @@ def convert_filetype(mode)
     '12' => '1',
     '14' => 's'
   }
-  mode.gsub(/^\d{2}/, filetype)[/^./]
+  mode.gsub(/^\d{2}/, filetype)[0]
 end
 
-def convert_right(mode)
-  right_pattern = {
+def convert_permissions(mode)
+  permission_pattern = {
     '0' => '---',
     '1' => '--x',
     '2' => '-w-',
@@ -129,21 +128,20 @@ def convert_right(mode)
     '6' => 'rw-',
     '7' => 'rwx'
   }
-  right = mode.gsub(/\d{3}$/) do |raw_right|
-    raw_right.gsub(/\d/, right_pattern)
+  permissions = mode.gsub(/\d{3}$/) do |raw_permissions|
+    raw_permissions.gsub(/\d/, permission_pattern)
   end
-  processed_right = convert_special_right(right)
-  processed_right[/^.{3}(.+)/, 1]
+  convert_special_permission(permissions)[3..11]
 end
 
-def convert_special_right(right)
-  case right[/^..(\d)/, 1]
+def convert_special_permission(permissions)
+  case permissions[2]
   when '1'
-    right.gsub(/.$/, { '-' => 'T', 'x' => 't' })
+    permissions.gsub(/.$/, { '-' => 'T', 'x' => 't' })
   when '2', '3'
-    right.gsub(/.$/, { '-' => 'S', 'x' => 's' })
+    permissions.gsub(/.$/, { '-' => 'S', 'x' => 's' })
   else
-    right
+    permissions
   end
 end
 

@@ -3,6 +3,8 @@
 require 'optparse'
 require 'etc'
 require 'date'
+require 'debug'
+
 
 BLOCK_SIZE_ADJUSTMENT = 2
 MODE_LENGTH = 6
@@ -10,14 +12,14 @@ MAX_COLUMNS = 3
 WIDTH = 18
 
 def main
-  option = define_option
+  options = define_options
 
   argument = ARGV[0] || '.'
 
-  if option.include?('-l')
-    format_long(argument)
+  if options.include?('-l')
+    format_long(argument, options)
   elsif File.directory? argument
-    display_directory_entries(argument)
+    display_directory_entries(argument, options)
   elsif File.file? argument
     puts ARGV[0]
   else
@@ -25,17 +27,19 @@ def main
   end
 end
 
-def define_option
+def define_options
   opt = OptionParser.new
-  option = []
-  opt.on('-l') { option << '-l' } # 今後のオプション追加に備えて、['-l']の代入ではなく空配列への追加という形をとっている。
+  options = []
+  opt.on('-a') { options << '-a' }
+  opt.on('-r') { options << '-r' }
+  opt.on('-l') { options << '-l' }
   opt.parse!(ARGV)
-  option
+  options
 end
 
-def format_long(argument)
+def format_long(argument, options)
   if File.directory? argument
-    entry_paths = filter_directory_entries(argument).map { |entry| File.join(argument, entry) }
+    entry_paths = filter_and_sort_entries(argument, options).map { |entry| File.join(argument, entry) }
   elsif File.file? argument
     entry_paths = [argument]
   else
@@ -99,9 +103,10 @@ def padding_informations_ljust(entry_informations)
   end
 end
 
-def filter_directory_entries(argument)
+def filter_and_sort_entries(argument, options)
   raw_entries = Dir.entries(argument).sort_by(&:downcase)
-  raw_entries.reject { |entry| entry.start_with? '.' }
+  filtered_entries = options.include?('-a') ? raw_entries : raw_entries.reject { |raw_entry| raw_entry.start_with? '.' }
+  options.include?('-r') ? filtered_entries.reverse : filtered_entries
 end
 
 def convert_filetype(mode)
@@ -159,8 +164,8 @@ def shape_entry_mtimes(entry_lstats)
   padded_entry_mtimes.map { |padded_entry_mtime| padded_entry_mtime.join(' ') }
 end
 
-def display_directory_entries(argument)
-  entries = filter_directory_entries(argument)
+def display_directory_entries(argument, options)
+  entries = filter_and_sort_entries(argument, options)
   columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
   max_length = columns.map(&:length).max
   padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }

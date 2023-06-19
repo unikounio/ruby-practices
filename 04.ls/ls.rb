@@ -10,14 +10,14 @@ MAX_COLUMNS = 3
 WIDTH = 18
 
 def main
-  option = define_option
+  options = define_options
 
   argument = ARGV[0] || '.'
 
-  if option.include?('-l')
-    format_long(argument)
+  if options.include?('-l')
+    format_long(argument, options)
   elsif File.directory? argument
-    display_directory_entries(argument)
+    display_directory_entries(argument, options)
   elsif File.file? argument
     puts ARGV[0]
   else
@@ -25,17 +25,19 @@ def main
   end
 end
 
-def define_option
+def define_options
   opt = OptionParser.new
-  option = []
-  opt.on('-l') { option << '-l' } # 今後のオプション追加に備えて、['-l']の代入ではなく空配列への追加という形をとっている。
+  options = []
+  opt.on('-a') { options << '-a' }
+  opt.on('-r') { options << '-r' }
+  opt.on('-l') { options << '-l' }
   opt.parse!(ARGV)
-  option
+  options
 end
 
-def format_long(argument)
+def format_long(argument, options)
   if File.directory? argument
-    entry_paths = filter_directory_entries(argument).map { |entry| File.join(argument, entry) }
+    entry_paths = filter_and_sort_entries(argument, options).map { |entry| File.join(argument, entry) }
   elsif File.file? argument
     entry_paths = [argument]
   else
@@ -54,15 +56,15 @@ end
 def display_long_entries(entry_paths)
   entry_lstats = entry_paths.map { |entry_path| File.lstat(entry_path) }
   entry_modes = entry_lstats.map do |entry_lstat|
-    raw_mode = entry_lstat.mode.to_s(8)
-    mode = raw_mode.rjust(MODE_LENGTH, '0')
-    "#{convert_filetype(mode)}#{convert_right(mode)}"
+    mode = entry_lstat.mode.to_s(8).rjust(MODE_LENGTH, '0')
+    "#{convert_filetype(mode)}#{convert_permissions(mode)}"
   end
   entry_basenames = entry_paths.map do |entry_path|
     File.symlink?(entry_path) ? "#{File.basename(entry_path)} -> #{File.readlink(entry_path)}" : File.basename(entry_path)
   end
-  entry_statuses = [entry_modes, shape_entry_nlinks(entry_lstats), shape_entry_uids(entry_lstats), shape_entry_gids(entry_lstats),
-                    shape_entry_sizes(entry_lstats), shape_entry_mtimes(entry_lstats), entry_basenames]
+  entry_statuses =
+    [entry_modes, shape_entry_nlinks(entry_lstats), shape_entry_uids(entry_lstats), shape_entry_gids(entry_lstats),
+     shape_entry_sizes(entry_lstats), shape_entry_mtimes(entry_lstats), entry_basenames]
   entry_statuses.transpose.each do |long_entry|
     puts long_entry.join(' ')
   end
@@ -100,9 +102,10 @@ def padding_informations_ljust(entry_informations)
   end
 end
 
-def filter_directory_entries(argument)
+def filter_and_sort_entries(argument, options)
   raw_entries = Dir.entries(argument).sort_by(&:downcase)
-  raw_entries.reject { |entry| entry.start_with? '.' }
+  filtered_entries = options.include?('-a') ? raw_entries : raw_entries.reject { |raw_entry| raw_entry.start_with? '.' }
+  options.include?('-r') ? filtered_entries.reverse : filtered_entries
 end
 
 def convert_filetype(mode)
@@ -115,11 +118,11 @@ def convert_filetype(mode)
     '12' => '1',
     '14' => 's'
   }
-  mode.gsub(/^\d{2}/, filetype)[/^./]
+  filetype[mode[0..1]]
 end
 
-def convert_right(mode)
-  right_pattern = {
+def convert_permissions(mode)
+  permission_pattern = {
     '0' => '---',
     '1' => '--x',
     '2' => '-w-',
@@ -129,21 +132,20 @@ def convert_right(mode)
     '6' => 'rw-',
     '7' => 'rwx'
   }
-  right = mode.gsub(/\d{3}$/) do |raw_right|
-    raw_right.gsub(/\d/, right_pattern)
+  permissions = mode.gsub(/\d{3}$/) do |raw_permissions|
+    raw_permissions.gsub(/\d/, permission_pattern)
   end
-  processed_right = convert_special_right(right)
-  processed_right[/^.{3}(.+)/, 1]
+  convert_special_permission(permissions)[3..11]
 end
 
-def convert_special_right(right)
-  case right[/^..(\d)/, 1]
+def convert_special_permission(permissions)
+  case permissions[2]
   when '1'
-    right.gsub(/.$/, { '-' => 'T', 'x' => 't' })
+    permissions.gsub(/.$/, { '-' => 'T', 'x' => 't' })
   when '2', '3'
-    right.gsub(/.$/, { '-' => 'S', 'x' => 's' })
+    permissions.gsub(/.$/, { '-' => 'S', 'x' => 's' })
   else
-    right
+    permissions
   end
 end
 
@@ -161,8 +163,8 @@ def shape_entry_mtimes(entry_lstats)
   padded_entry_mtimes.map { |padded_entry_mtime| padded_entry_mtime.join(' ') }
 end
 
-def display_directory_entries(argument)
-  entries = filter_directory_entries(argument)
+def display_directory_entries(argument, options)
+  entries = filter_and_sort_entries(argument, options)
   columns = entries.each_slice((entries.length.to_f / MAX_COLUMNS).ceil).to_a
   max_length = columns.map(&:length).max
   padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }

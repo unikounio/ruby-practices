@@ -118,7 +118,7 @@ def convert_filetype(mode)
     '12' => '1',
     '14' => 's'
   }
-  mode.gsub(/^\d{2}/, filetype)[0]
+  filetype[mode[0..1]]
 end
 
 def convert_permissions(mode)

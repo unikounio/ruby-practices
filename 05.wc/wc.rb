@@ -14,10 +14,16 @@ def main
     puts "wc: #{ARGV[0]}: ディレクトリです"
   end
 
-  print "#{lines}".rjust(7)
-  print "#{words}".rjust(8)
-  puts "#{characters}".rjust(8)
+  if ARGV[0].nil? || File.directory?(ARGV[0])
+    print "#{lines}".rjust(7)
+    print "#{words}".rjust(8)
+    print "#{characters}".rjust(8)
+  else 
+    print " #{lines}  #{words} #{characters}"
+  end
 
+  print " #{ARGV[0]}" unless ARGV[0].nil?
+  puts ""
 end
 
 main

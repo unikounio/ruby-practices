@@ -1,4 +1,9 @@
+# frozen_string_literal: true
+
+require 'optparse'
+
 def main
+  options = define_options
   total_lines = 0
   total_words = 0
   total_characters = 0
@@ -14,9 +19,9 @@ def main
       words += line.split.size
       characters += line.bytesize
     end
-    print "#{lines}".rjust(7)
-    print "#{words}".rjust(8)
-    print "#{characters}".rjust(8)
+    print "#{lines}".rjust(8) if options.include?('-l') || options.empty?
+    print "#{words}".rjust(8) if options.include?('-w') || options.empty?
+    print "#{characters}".rjust(8) if options.include?('-c') || options.empty?
     puts ""
   else
     input_sources.each do |input_source|
@@ -33,13 +38,10 @@ def main
         puts "wc: #{input_source}: ディレクトリです"
       end
     
-      if ARGV.length == 1 && File.file?(input_source)
-        print " #{lines}  #{words} #{characters}"
-      else
-        print "#{lines}".rjust(7)
-        print "#{words}".rjust(8)
-        print "#{characters}".rjust(8)
-      end
+      print "#{lines}".rjust(8) if options.include?('-l') || options.empty?
+      print "#{words}".rjust(8) if options.include?('-w') || options.empty?
+      print "#{characters}".rjust(8) if options.include?('-c') || options.empty?
+      
       print " #{input_source}"
       puts ""
 
@@ -49,12 +51,22 @@ def main
     end
     
     if ARGV.length > 1
-      print "#{total_lines}".rjust(7)
-      print "#{total_words}".rjust(8)
-      print "#{total_characters}".rjust(8)
+      print "#{total_lines}".rjust(8) if options.include?('-l') || options.empty?
+      print "#{total_words}".rjust(8) if options.include?('-w') || options.empty?
+      print "#{total_characters}".rjust(8) if options.include?('-c') || options.empty?
       puts ' 合計'
     end
   end
+end
+
+def define_options
+  opt = OptionParser.new
+  options = []
+  opt.on('-l') { options << '-l' }
+  opt.on('-w') { options << '-w' }
+  opt.on('-c') { options << '-c' }
+  opt.parse!(ARGV)
+  options
 end
 
 main

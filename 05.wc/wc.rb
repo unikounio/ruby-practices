@@ -4,30 +4,13 @@ require 'optparse'
 
 def main
   options = define_options
-  total_lines = 0
-  total_words = 0
-  total_characters = 0
 
   if ARGV.empty?
-    lines, words, characters = calculate_wc($stdin)
-
-    print_wc_results(options, lines, words, characters)
+    wc = calculate_wc($stdin)
+    print_results(wc, options)
   else
-    Dir.glob(ARGV).each do |argument|
-      lines, words, characters = calculate_wc(File.open(argument))
-
-      print_wc_results(options, lines, words, characters, argument)
-      total_lines += lines
-      total_words += words
-      total_characters += characters
-    end
-
-    if ARGV.length > 1
-      print total_lines.to_s.rjust(7) if options.include?('-l') || options.empty?
-      print total_words.to_s.rjust(8) if options.include?('-w') || options.empty?
-      print total_characters.to_s.rjust(8) if options.include?('-c') || options.empty?
-      puts ' total'
-    end
+    total_wc = calculate_total_wc(options)
+    print_total_results(total_wc, options)
   end
 end
 
@@ -54,16 +37,40 @@ def calculate_wc(input_source)
     end
   end
 
-  [lines, words, characters]
+  { lines:, words:, characters: }
 end
 
-def print_wc_results(options, lines, words, characters, argument = '')
+def print_results(result, options, argument = '')
   puts "wc: #{argument}: Is a directory" if File.directory? argument
-  print lines.to_s.rjust(7) if options.include?('-l') || options.empty?
-  print words.to_s.rjust(8) if options.include?('-w') || options.empty?
-  print characters.to_s.rjust(8) if options.include?('-c') || options.empty?
-  print " #{argument}"
-  puts ''
+  print result[:lines].to_s.rjust(7) if options.include?('-l') || options.empty?
+  print result[:words].to_s.rjust(8) if options.include?('-w') || options.empty?
+  print result[:characters].to_s.rjust(8) if options.include?('-c') || options.empty?
+  puts " #{argument}"
+end
+
+def calculate_total_wc(options)
+  total_lines = 0
+  total_words = 0
+  total_characters = 0
+
+  Dir.glob(ARGV).each do |argument|
+    wc = calculate_wc(File.open(argument))
+    print_results(wc, options, argument)
+
+    total_lines += wc[:lines]
+    total_words += wc[:words]
+    total_characters += wc[:characters]
+  end
+
+  exit if ARGV.length == 1
+  { total_lines:, total_words:, total_characters: }
+end
+
+def print_total_results(total_result, options)
+  print total_result[:total_lines].to_s.rjust(7) if options.include?('-l') || options.empty?
+  print total_result[:total_words].to_s.rjust(8) if options.include?('-w') || options.empty?
+  print total_result[:total_characters].to_s.rjust(8) if options.include?('-c') || options.empty?
+  puts ' total'
 end
 
 main

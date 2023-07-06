@@ -2,6 +2,9 @@
 
 require 'optparse'
 
+LINES_WIDTH = 7
+WORDS_AND_CHARACTERS_WIDTH = 8
+
 def main
   options = define_options
 
@@ -42,9 +45,9 @@ end
 
 def print_results(result, options, argument = '')
   puts "wc: #{argument}: Is a directory" if File.directory? argument
-  print result[:lines].to_s.rjust(7) if options.include?('-l') || options.empty?
-  print result[:words].to_s.rjust(8) if options.include?('-w') || options.empty?
-  print result[:characters].to_s.rjust(8) if options.include?('-c') || options.empty?
+  print result[:lines].to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
+  print result[:words].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
+  print result[:characters].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
   puts " #{argument}"
 end
 
@@ -67,9 +70,9 @@ def calculate_total_wc(options)
 end
 
 def print_total_results(total_result, options)
-  print total_result[:total_lines].to_s.rjust(7) if options.include?('-l') || options.empty?
-  print total_result[:total_words].to_s.rjust(8) if options.include?('-w') || options.empty?
-  print total_result[:total_characters].to_s.rjust(8) if options.include?('-c') || options.empty?
+  print total_result[:total_lines].to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
+  print total_result[:total_words].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
+  print total_result[:total_characters].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
   puts ' total'
 end
 

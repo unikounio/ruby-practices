@@ -9,24 +9,9 @@ def main
   options = parse_options
 
   if ARGV.empty?
-    lines_words_characters = calculate_lines_words_characters($stdin)
-    print_results(lines_words_characters, options)
+    print_lines_words_characters_from_standard_input(options)
   else
-    total_lines = 0
-    total_words = 0
-    total_characters = 0
-
-    Dir.glob(ARGV).each do |argument|
-      lines_words_characters = calculate_lines_words_characters(File.open(argument))
-      print_results(lines_words_characters, options, argument)
-
-      total_lines += lines_words_characters[:lines]
-      total_words += lines_words_characters[:words]
-      total_characters += lines_words_characters[:characters]
-    end
-
-    exit if ARGV.length == 1
-    print_total_results(total_lines, total_words, total_characters, options)
+    print_lines_words_characters_and_total_from_argv(options)
   end
 end
 
@@ -40,35 +25,61 @@ def parse_options
   options
 end
 
+def print_lines_words_characters_from_standard_input(options)
+  lines_words_characters = calculate_lines_words_characters($stdin)
+  print_lines_words_characters(lines_words_characters[:lines], lines_words_characters[:words], lines_words_characters[:characters], options)
+  puts
+end
+
 def calculate_lines_words_characters(input_source)
   lines = 0
   words = 0
   characters = 0
 
-  unless File.directory? input_source
-    input_source.each_line do |line|
-      lines += 1
-      words += line.split.size
-      characters += line.bytesize
-    end
+  input_source.each_line do |line|
+    lines += 1
+    words += line.split.size
+    characters += line.bytesize
   end
 
   { lines:, words:, characters: }
 end
 
-def print_results(result, options, argument = '')
-  puts "wc: #{argument}: Is a directory" if File.directory? argument
-  print result[:lines].to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
-  print result[:words].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
-  print result[:characters].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
-  puts " #{argument}"
+def print_lines_words_characters(lines, words, characters, options)
+  print lines.to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
+  print words.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
+  print characters.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
 end
 
-def print_total_results(total_lines, total_words, total_characters, options)
-  print total_lines.to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
-  print total_words.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
-  print total_characters.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
+def print_lines_words_characters_and_total_from_argv(options)
+  totals = { total_lines: 0, total_words: 0, total_characters: 0 }
+
+  Dir.glob(ARGV).each do |file_path|
+    lines_words_characters =
+      if File.directory? File.open(file_path)
+        { lines: 0, words: 0, characters: 0 }
+      else
+        calculate_lines_words_characters(File.open(file_path))
+      end
+
+    puts "wc: #{file_path}: Is a directory" if File.directory? file_path
+    print_lines_words_characters(lines_words_characters[:lines], lines_words_characters[:words], lines_words_characters[:characters], options)
+    puts " #{file_path}"
+
+    calculate_total_lines_words_characters(lines_words_characters, totals)
+  end
+
+  return if ARGV.length == 1
+
+  print_lines_words_characters(totals[:total_lines], totals[:total_words], totals[:total_characters], options)
   puts ' total'
+end
+
+def calculate_total_lines_words_characters(lines_words_characters, totals)
+  totals[:total_lines] += lines_words_characters[:lines]
+  totals[:total_words] += lines_words_characters[:words]
+  totals[:total_characters] += lines_words_characters[:characters]
+  totals
 end
 
 main

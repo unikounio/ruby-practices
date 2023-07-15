@@ -6,18 +6,31 @@ LINES_WIDTH = 7
 WORDS_AND_CHARACTERS_WIDTH = 8
 
 def main
-  options = define_options
+  options = parse_options
 
   if ARGV.empty?
-    wc = calculate_wc($stdin)
-    print_results(wc, options)
+    lines_words_characters = calculate_lines_words_characters($stdin)
+    print_results(lines_words_characters, options)
   else
-    total_wc = calculate_total_wc(options)
-    print_total_results(total_wc, options)
+    total_lines = 0
+    total_words = 0
+    total_characters = 0
+
+    Dir.glob(ARGV).each do |argument|
+      lines_words_characters = calculate_lines_words_characters(File.open(argument))
+      print_results(lines_words_characters, options, argument)
+
+      total_lines += lines_words_characters[:lines]
+      total_words += lines_words_characters[:words]
+      total_characters += lines_words_characters[:characters]
+    end
+
+    exit if ARGV.length == 1
+    print_total_results(total_lines, total_words, total_characters, options)
   end
 end
 
-def define_options
+def parse_options
   opt = OptionParser.new
   options = []
   opt.on('-l') { options << '-l' }
@@ -27,7 +40,7 @@ def define_options
   options
 end
 
-def calculate_wc(input_source)
+def calculate_lines_words_characters(input_source)
   lines = 0
   words = 0
   characters = 0
@@ -51,28 +64,10 @@ def print_results(result, options, argument = '')
   puts " #{argument}"
 end
 
-def calculate_total_wc(options)
-  total_lines = 0
-  total_words = 0
-  total_characters = 0
-
-  Dir.glob(ARGV).each do |argument|
-    wc = calculate_wc(File.open(argument))
-    print_results(wc, options, argument)
-
-    total_lines += wc[:lines]
-    total_words += wc[:words]
-    total_characters += wc[:characters]
-  end
-
-  exit if ARGV.length == 1
-  { total_lines:, total_words:, total_characters: }
-end
-
-def print_total_results(total_result, options)
-  print total_result[:total_lines].to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
-  print total_result[:total_words].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
-  print total_result[:total_characters].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
+def print_total_results(total_lines, total_words, total_characters, options)
+  print total_lines.to_s.rjust(LINES_WIDTH) if options.include?('-l') || options.empty?
+  print total_words.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-w') || options.empty?
+  print total_characters.to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options.include?('-c') || options.empty?
   puts ' total'
 end
 

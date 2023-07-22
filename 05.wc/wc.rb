@@ -2,8 +2,7 @@
 
 require 'optparse'
 
-LINES_WIDTH = 7
-WORDS_AND_CHARACTERS_WIDTH = 8
+STATISTICS_WIDTH = 7
 
 def main
   options = parse_options
@@ -11,7 +10,7 @@ def main
   if ARGV.empty?
     print_statistics_from_standard_input(options)
   else
-    print_statistics_and_total_from_argv(options)
+    print_statistics_from_argv(options)
   end
 end
 
@@ -25,8 +24,7 @@ def parse_options
     opt.parse!(ARGV)
   end
 
-  options = {lines: true, words: true, characters: true} if options.empty?
-  options
+  options.empty? ? { lines: true, words: true, characters: true } : options
 end
 
 def print_statistics_from_standard_input(options)
@@ -50,23 +48,25 @@ def calculate_statistics(input_source)
 end
 
 def print_statistics(statistics, options)
-  print statistics[:lines].to_s.rjust(LINES_WIDTH) if options[:lines]
-  print statistics[:words].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options[:words]
-  print statistics[:characters].to_s.rjust(WORDS_AND_CHARACTERS_WIDTH) if options[:characters]
+  rjusted_statistics = []
+  rjusted_statistics << statistics[:lines].to_s.rjust(STATISTICS_WIDTH) if options[:lines]
+  rjusted_statistics << statistics[:words].to_s.rjust(STATISTICS_WIDTH) if options[:words]
+  rjusted_statistics << statistics[:characters].to_s.rjust(STATISTICS_WIDTH) if options[:characters]
+  print rjusted_statistics.join(' ')
 end
 
-def print_statistics_and_total_from_argv(options)
+def print_statistics_from_argv(options)
   totals = { lines: 0, words: 0, characters: 0 }
 
   Dir.glob(ARGV).each do |file_path|
     statistics =
       if File.directory? file_path
+        puts "wc: #{file_path}: Is a directory"
         { lines: 0, words: 0, characters: 0 }
       else
         calculate_statistics(File.read(file_path))
       end
 
-    puts "wc: #{file_path}: Is a directory" if File.directory? file_path
     print_statistics(statistics, options)
     puts " #{file_path}"
 

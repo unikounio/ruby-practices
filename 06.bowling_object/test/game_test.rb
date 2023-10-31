@@ -22,7 +22,7 @@ class GameTest < Minitest::Test
     assert_equal 134, game.score
   end
 
-  def test_tenth_frame_strike_follow
+  def test_tenth_frame_strike_with_following_shots
     game = Game.new('6,3,9,0,0,3,8,2,7,3,X,9,1,8,0,X,X,1,8')
     assert_equal 144, game.score
   end

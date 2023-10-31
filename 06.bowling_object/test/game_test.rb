@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 require 'minitest/autorun'
-require_relative '../game.rb'
+require_relative '../game'
 
 class GameTest < Minitest::Test
   def test_mixed_scores

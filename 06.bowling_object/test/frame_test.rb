@@ -15,29 +15,29 @@ class FrameTest < Minitest::Test
 
   def test_ninth_frame_strike
     ninth_frame = @game.frames[8]
-    last_frame = @game.frames[9]
+    @game.frames[9]
 
     assert_equal 20, ninth_frame.score
   end
 
   def test_double_strike_score
     first_frame = @game.frames[0]
-    second_frame = @game.frames[1]
-    third_frame = @game.frames[2]
+    @game.frames[1]
+    @game.frames[2]
 
     assert_equal 21, first_frame.score
   end
 
   def test_single_strike_score
     second_frame = @game.frames[1]
-    third_frame = @game.frames[2]
+    @game.frames[2]
 
     assert_equal 20, second_frame.score
   end
 
   def test_spare_score
     third_frame = @game.frames[2]
-    fourth_frame = @game.frames[3]
+    @game.frames[3]
 
     assert_equal 12, third_frame.score
   end

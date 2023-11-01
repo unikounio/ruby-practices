@@ -6,11 +6,11 @@ class Frame
   attr_reader :frame_number, :first_shot, :second_shot, :third_shot
   attr_accessor :next_frame, :after_next_frame
 
-  def initialize(frame_marks, frame_number)
+  def initialize(frame_shots, frame_number)
     @frame_number = frame_number
-    @first_shot = Shot.score(frame_marks[0])
-    @second_shot = Shot.score(frame_marks[1])
-    @third_shot = Shot.score(frame_marks[2])
+    @first_shot = Shot.score(frame_shots[0])
+    @second_shot = Shot.score(frame_shots[1])
+    @third_shot = Shot.score(frame_shots[2])
   end
 
   def score

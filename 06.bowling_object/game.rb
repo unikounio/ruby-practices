@@ -7,9 +7,9 @@ class Game
 
   def initialize(shots_text)
     shot_marks = shots_text.split(',')
-    frame_marks = organize_shots_into_frames(shot_marks)
-    @frames = frame_marks.map.with_index(1) do |frame_marks, frame_number|
-      Frame.new(frame_marks, frame_number)
+    frames_shot_marks = organize_shots_into_frames(shot_marks)
+    @frames = frames_shot_marks.map.with_index(1) do |frame_shots, frame_number|
+      Frame.new(frame_shots, frame_number)
     end
     set_frame_relations
   end

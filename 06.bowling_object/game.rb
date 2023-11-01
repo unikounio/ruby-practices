@@ -18,26 +18,25 @@ class Game
     frames.sum(&:score)
   end
 
-
   private
 
   def organize_shots_into_frames(shot_marks)
-    frames = []
+    frame_marks = []
     current_frame = []
     shot_marks.each do |shot|
-      frames << [] if next_frame?(frames, current_frame)
-      current_frame = frames.last
+      frame_marks << [] if next_frame?(frame_marks, current_frame)
+      current_frame = frame_marks.last
       current_frame << shot
     end
-    frames
+    frame_marks
   end
 
-  def next_frame?(frames, current_frame)
-    not_last_frame?(frames) && (frames.empty? || strike?(current_frame) || current_frame.size == 2)
+  def next_frame?(frame_marks, current_frame)
+    not_last_frame?(frame_marks) && (frame_marks.empty? || strike?(current_frame) || current_frame.size == 2)
   end
 
-  def not_last_frame?(frames)
-    frames.size != 10
+  def not_last_frame?(frame_marks)
+    frame_marks.size != 10
   end
 
   def strike?(current_frame)

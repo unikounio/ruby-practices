@@ -21,22 +21,22 @@ class Game
   private
 
   def organize_shots_into_frames(shot_marks)
-    frames_shot_shots = []
+    frames_shot_marks = []
     current_frame = []
     shot_marks.each do |shot|
-      frames_shot_shots << [] if next_frame?(frames_shot_shots, current_frame)
-      current_frame = frames_shot_shots.last
+      frames_shot_marks << [] if next_frame?(frames_shot_marks, current_frame)
+      current_frame = frames_shot_marks.last
       current_frame << shot
     end
-    frames_shot_shots
+    frames_shot_marks
   end
 
-  def next_frame?(frames_shot_shots, current_frame)
-    not_last_frame?(frames_shot_shots) && (frames_shot_shots.empty? || strike?(current_frame) || current_frame.size == 2)
+  def next_frame?(frames_shot_marks, current_frame)
+    not_last_frame?(frames_shot_marks) && (frames_shot_marks.empty? || strike?(current_frame) || current_frame.size == 2)
   end
 
-  def not_last_frame?(frames_shot_shots)
-    frames_shot_shots.size != 10
+  def not_last_frame?(frames_shot_marks)
+    frames_shot_marks.size != 10
   end
 
   def strike?(current_frame)

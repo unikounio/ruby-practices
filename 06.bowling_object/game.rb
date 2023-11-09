@@ -8,8 +8,8 @@ class Game
   def initialize(shots_text)
     shot_marks = shots_text.split(',')
     frames_shot_marks = organize_shots_into_frames(shot_marks)
-    @frames = frames_shot_marks.map.with_index(1) do |frame_shots, frame_number|
-      Frame.new(frame_shots, frame_number)
+    @frames = frames_shot_marks.map.with_index(1) do |frame_shot_marks, frame_number|
+      Frame.new(frame_shot_marks, frame_number)
     end
     set_frame_relations
   end
@@ -46,7 +46,6 @@ class Game
   def set_frame_relations
     frames.each_with_index do |frame, index|
       frame.next_frame = @frames[index + 1]
-      frame.after_next_frame = @frames[index + 2]
     end
   end
 end

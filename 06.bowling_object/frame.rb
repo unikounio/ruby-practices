@@ -4,13 +4,13 @@ require_relative 'shot'
 
 class Frame
   attr_reader :frame_number, :first_shot, :second_shot, :third_shot
-  attr_accessor :next_frame, :after_next_frame
+  attr_accessor :next_frame
 
-  def initialize(frame_shots, frame_number)
+  def initialize(frame_shot_marks, frame_number)
     @frame_number = frame_number
-    @first_shot = Shot.score(frame_shots[0])
-    @second_shot = Shot.score(frame_shots[1])
-    @third_shot = Shot.score(frame_shots[2])
+    @first_shot = Shot.new(frame_shot_marks[0])
+    @second_shot = Shot.new(frame_shot_marks[1])
+    @third_shot = Shot.new(frame_shot_marks[2])
   end
 
   def score
@@ -18,7 +18,7 @@ class Frame
   end
 
   def summed_up_shots
-    [first_shot, second_shot, third_shot].sum
+    [first_shot.score, second_shot.score, third_shot.score].sum
   end
 
   private
@@ -31,21 +31,22 @@ class Frame
     if strike?
       strike_bonus
     elsif spare?
-      next_frame.first_shot
+      next_frame.first_shot.score
     else
       0
     end
   end
 
   def strike?
-    first_shot == 10
+    first_shot.score == 10
   end
 
   def strike_bonus
     if next_last_frame?
-      next_frame.first_shot + next_frame.second_shot
+      next_frame.first_shot.score + next_frame.second_shot.score
     elsif double?
-      next_frame.first_shot + after_next_frame.first_shot
+      after_next_frame = next_frame.next_frame
+      next_frame.first_shot.score + after_next_frame.first_shot.score
     else
       next_frame.summed_up_shots
     end
@@ -56,10 +57,10 @@ class Frame
   end
 
   def double?
-    next_frame.first_shot == 10
+    next_frame.first_shot.score == 10
   end
 
   def spare?
-    [first_shot, second_shot].sum == 10
+    [first_shot.score, second_shot.score].sum == 10
   end
 end

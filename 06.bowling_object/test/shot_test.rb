@@ -5,6 +5,7 @@ require_relative '../shot'
 
 class ShotTest < Minitest::Test
   def test_shot_score
-    assert_equal 10, Shot.score('X')
+    shot = Shot.new('X')
+    assert_equal 10, shot.score
   end
 end

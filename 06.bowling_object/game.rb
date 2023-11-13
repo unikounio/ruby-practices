@@ -11,6 +11,7 @@ class Game
     @frames = frames_shot_marks.map.with_index(1) do |frame_shot_marks, frame_number|
       Frame.new(frame_shot_marks, frame_number)
     end
+    @frames[9].last_frame = true
     set_frame_relations
   end
 

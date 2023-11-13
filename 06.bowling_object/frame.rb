@@ -21,6 +21,10 @@ class Frame
     [first_shot.score, second_shot.score, third_shot.score].sum
   end
 
+  def strike?
+    first_shot.score == 10
+  end
+
   private
 
   def last_frame?
@@ -35,10 +39,6 @@ class Frame
     else
       0
     end
-  end
-
-  def strike?
-    first_shot.score == 10
   end
 
   def strike_bonus
@@ -57,7 +57,7 @@ class Frame
   end
 
   def double?
-    next_frame.first_shot.score == 10
+    strike? && next_frame.strike?
   end
 
   def spare?

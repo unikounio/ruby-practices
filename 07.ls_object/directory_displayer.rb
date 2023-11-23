@@ -42,7 +42,7 @@ class DirectoryDisplayer
       padded_row =
         row.map do |entry|
           entry_name =
-            entry == '' ?  '' : entry.name
+            entry == '' ? '' : entry.name
           hankaku_ljust(entry_name, WIDTH)
         end
       puts padded_row.join

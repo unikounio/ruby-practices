@@ -19,6 +19,8 @@ def main
   end
 end
 
+private
+
 def define_options
   opt = OptionParser.new
   options = { long_format: false, reverse: false, dot_match: false }

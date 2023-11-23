@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'entry'
-require 'debug'
 
 class DirectoryDisplayer
   BLOCK_SIZE_ADJUSTMENT = 2
@@ -43,11 +42,7 @@ class DirectoryDisplayer
       padded_row =
         row.map do |entry|
           entry_name =
-            if entry == ''
-              ''
-            else
-              entry.name
-            end
+            entry == '' ?  '' : entry.name
           hankaku_ljust(entry_name, WIDTH)
         end
       puts padded_row.join

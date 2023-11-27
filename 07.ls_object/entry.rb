@@ -39,7 +39,7 @@ class Entry
     name.start_with? '.'
   end
 
-  def format_long
+  def setup_long_format
     @lstat = File.lstat(path)
     @mode = create_mode
     @nlink = @lstat.nlink.to_s
@@ -48,10 +48,9 @@ class Entry
     @size = create_size
     @mtime = create_mtime
     @basename = create_basename
-    create_long_format
   end
 
-  def create_long_format
+  def build_long_format
     [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
   end
 

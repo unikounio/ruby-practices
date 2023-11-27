@@ -24,7 +24,7 @@ class DirectoryDisplayer
   end
 
   def display_long
-    @entries.each(&:format_long)
+    @entries.each(&:setup_long_format)
     display_total_blocks
     padding_statuses
     display_long_entries
@@ -61,7 +61,7 @@ class DirectoryDisplayer
 
   def display_long_entries
     @entries.each do |entry|
-      puts entry.create_long_format
+      puts entry.build_long_format
     end
   end
 

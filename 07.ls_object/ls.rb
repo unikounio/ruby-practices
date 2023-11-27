@@ -36,7 +36,8 @@ def run_ls_long(pathname, options)
     display_directory(pathname, options, :display_long)
   elsif pathname.file?
     entry = Entry.new(pathname)
-    puts entry.format_long
+    entry.setup_long_format
+    puts entry.build_long_format
   end
 end
 

@@ -48,10 +48,10 @@ class Entry
     @size = create_size
     @mtime = create_mtime
     @basename = create_basename
-    long_format
+    create_long_format
   end
 
-  def long_format
+  def create_long_format
     [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
   end
 

@@ -61,7 +61,7 @@ class DirectoryDisplayer
 
   def display_long_entries
     @entries.each do |entry|
-      puts entry.long_format
+      puts entry.create_long_format
     end
   end
 

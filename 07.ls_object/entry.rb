@@ -26,7 +26,7 @@ class Entry
     '7' => 'rwx'
   }.freeze
 
-  attr_reader :path, :name, :lstat, :long_format
+  attr_reader :path, :name, :lstat
 
   attr_accessor :nlink, :uid, :gid, :size, :year_or_time
 
@@ -42,34 +42,24 @@ class Entry
   def format_long
     @lstat = File.lstat(path)
     @mode = create_mode
-    @nlink = create_nlink
-    @uid = create_uid
-    @gid = create_gid
+    @nlink = @lstat.nlink.to_s
+    @uid = Etc.getpwuid(@lstat.uid).name
+    @gid = Etc.getgrgid(@lstat.gid).name
     @size = create_size
     @mtime = create_mtime
     @basename = create_basename
-    @long_format = [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
+    long_format
   end
 
-  def update_long_format
-    @long_format = [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
+  def long_format
+    [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
   end
+
+  private
 
   def create_mode
     raw_mode = @lstat.mode.to_s(8).rjust(MODE_LENGTH, '0')
     [FILETYPE[raw_mode[0..1]], convert_permissions(raw_mode)].join
-  end
-
-  def create_nlink
-    @lstat.nlink.to_s
-  end
-
-  def create_uid
-    Etc.getpwuid(@lstat.uid).name
-  end
-
-  def create_gid
-    Etc.getgrgid(@lstat.gid).name
   end
 
   def create_size
@@ -103,7 +93,7 @@ class Entry
       else
         raw_mtime.strftime('%Y')
       end
-    [month_and_day, year_or_time].join(' ')
+    [month_and_day, @year_or_time].join(' ')
   end
 
   def create_basename

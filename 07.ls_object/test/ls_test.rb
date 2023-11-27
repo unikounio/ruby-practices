@@ -15,7 +15,7 @@ class LsTest < Test::Unit::TestCase
     options.empty? ? ARGV.replace([current_path]) : ARGV.replace([current_path, options].flatten)
   end
 
-  def set_file_path_to_argv(file_name, option=nil)
+  def set_file_path_to_argv(file_name, option = nil)
     file_path = [@parent_path, file_name].join('/')
     option.nil? ? ARGV.replace([file_path]) : ARGV.replace([file_path, option])
   end

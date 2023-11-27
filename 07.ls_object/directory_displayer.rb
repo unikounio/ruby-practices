@@ -25,50 +25,71 @@ class DirectoryDisplayer
 
   def display_long
     @entries.each(&:format_long)
-    total_blocks = @entries.each.sum { |entry| entry.lstat.blocks / BLOCK_SIZE_ADJUSTMENT }
-    puts "total #{total_blocks}"
+    display_total_blocks
     padding_statuses
-    @entries.each do |entry|
-      entry.update_long_format
-      puts entry.long_format
-    end
+    display_long_entries
   end
 
   def display_short
-    columns = @entries.each_slice((@entries.length.to_f / MAX_COLUMNS).ceil).to_a
-    max_length = columns.map(&:length).max
-    padded_columns = columns.map { |column| column + [''] * (max_length - column.length) }
-    padded_columns.transpose.each do |row|
-      padded_row =
-        row.map do |entry|
-          entry_name =
-            entry == '' ? '' : entry.name
-          hankaku_ljust(entry_name, WIDTH)
-        end
-      puts padded_row.join
-    end
+    padded_columns = create_padded_columns
+    display_rows(padded_columns.transpose)
   end
 
   private
 
+  def display_total_blocks
+    total_blocks = @entries.each.sum { |entry| entry.lstat.blocks / BLOCK_SIZE_ADJUSTMENT }
+    puts "total #{total_blocks}"
+  end
+
   def padding_statuses
-    nlinks_max_length = @entries.map { |entry| entry.nlink.to_s.length }.max
-    uids_max_length = @entries.map { |entry| entry.uid.length }.max
-    gids_max_length = @entries.map { |entry| entry.gid.length }.max
-    sizes_max_length = @entries.map { |entry| entry.size.to_s.length }.max
-    year_or_times_max_length = @entries.map { |entry| entry.year_or_time.length }.max
-    # 各エントリに対してパディングを適用
+    padding_status(:nlink, :rjust)
+    padding_status(:uid, :ljust)
+    padding_status(:gid, :ljust)
+    padding_status(:size, :rjust)
+    padding_status(:year_or_time, :rjust)
+  end
+
+  def padding_status(attribute, padding_method)
+    max_length = @entries.map { |entry| entry.send(attribute).to_s.length }.max
     @entries.each do |entry|
-      entry.nlink = entry.nlink.to_s.rjust(nlinks_max_length)
-      entry.uid = entry.uid.ljust(uids_max_length)
-      entry.gid = entry.gid.ljust(gids_max_length)
-      entry.size = entry.size.to_s.rjust(sizes_max_length)
-      entry.year_or_time = entry.year_or_time.rjust(year_or_times_max_length)
+      status = entry.send(attribute).to_s
+      padded_status = status.send(padding_method, max_length)
+      entry.send("#{attribute}=", padded_status)
     end
   end
 
-  def hankaku_ljust(entry_name, width, padding = ' ')
-    convert_hankaku = entry_name.each_char.sum { |char| char.bytesize > 1 ? (char.bytesize - 2) : 0 }
-    entry_name.ljust(width - convert_hankaku, padding)
+  def display_long_entries
+    @entries.each do |entry|
+      puts entry.long_format
+    end
+  end
+
+  def create_padded_columns
+    columns = @entries.each_slice((@entries.length.to_f / MAX_COLUMNS).ceil).to_a
+    max_length = columns.map(&:length).max
+    columns.map { |column| column + [''] * (max_length - column.length) }
+  end
+
+  def display_rows(rows)
+    rows.each do |row|
+      padded_row = padding_entries(row)
+      puts padded_row.join
+    end
+  end
+
+  def padding_entries(row)
+    row.map do |entry|
+      entry_name =
+        entry == '' ? '' : entry.name
+      display_width = WIDTH - measure_bytesize(entry_name)
+      entry_name.ljust(display_width, ' ')
+    end
+  end
+
+  def measure_bytesize(entry_name)
+    entry_name.each_char.sum do |char|
+      char.bytesize > 1 ? (char.bytesize - 2) : 0
+    end
   end
 end

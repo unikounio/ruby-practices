@@ -33,22 +33,24 @@ end
 
 def run_ls_long(pathname, options)
   if pathname.directory?
-    directory = create_directory(pathname, options)
-    directory.display_long
+    display_directory(pathname, options, :display_long)
   elsif pathname.file?
     entry = Entry.new(pathname)
-    entry.format_long
-    puts entry.long_format
+    puts entry.format_long
   end
 end
 
 def run_ls_short(pathname, options)
   if pathname.directory?
-    directory = create_directory(pathname, options)
-    directory.display_short
+    display_directory(pathname, options, :display_short)
   elsif pathname.file?
     puts pathname.basename
   end
+end
+
+def display_directory(pathname, options, display_method)
+  directory = create_directory(pathname, options)
+  directory.send(display_method)
 end
 
 def create_directory(pathname, options)

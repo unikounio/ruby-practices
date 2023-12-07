@@ -66,8 +66,7 @@ def build_directory_displayer(pathname, options)
     Entry.new(absolute_path)
   end
 
-  directory_displayer = DirectoryDisplayer.new(entries, options)
-  directory_displayer
+  DirectoryDisplayer.new(entries, options)
 end
 
 main

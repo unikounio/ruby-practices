@@ -6,13 +6,13 @@ require_relative 'directory_displayer'
 require_relative 'entry'
 
 def main
-  options = define_options
+  options = parse_options
 
   pathname = Pathname(ARGV[0] || '.')
 
-  if options[:long_format]
+  if options[:long_format] && file_or_directory?(pathname)
     run_ls_long(pathname, options)
-  elsif pathname.directory? || pathname.file?
+  elsif file_or_directory?(pathname)
     run_ls_short(pathname, options)
   else
     puts "ls: cannot access \'#{ARGV[0]}\': No such file or directory"
@@ -21,7 +21,7 @@ end
 
 private
 
-def define_options
+def parse_options
   opt = OptionParser.new
   options = { long_format: false, reverse: false, dot_match: false }
   opt.on('-l') { |v| options[:long_format] = v }
@@ -29,6 +29,10 @@ def define_options
   opt.on('-a') { |v| options[:dot_match] = v }
   opt.parse!(ARGV)
   options
+end
+
+def file_or_directory?(pathname)
+  pathname.directory? || pathname.file?
 end
 
 def run_ls_long(pathname, options)
@@ -50,15 +54,15 @@ def run_ls_short(pathname, options)
 end
 
 def display_directory(pathname, options, display_method)
-  directory = create_directory(pathname, options)
-  directory.send(display_method)
+  directory_displayer = build_directory_displayer(pathname, options)
+  directory_displayer.send(display_method)
 end
 
-def create_directory(pathname, options)
-  directory = DirectoryDisplayer.new(pathname)
-  directory.filter unless options[:dot_match]
-  directory.reverse if options[:reverse]
-  directory
+def build_directory_displayer(pathname, options)
+  directory_displayer = DirectoryDisplayer.new(pathname)
+  directory_displayer.filter unless options[:dot_match]
+  directory_displayer.reverse if options[:reverse]
+  directory_displayer
 end
 
 main

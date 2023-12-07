@@ -7,20 +7,10 @@ class DirectoryDisplayer
   MAX_COLUMNS = 3
   WIDTH = 18
 
-  def initialize(directory_path)
-    entry_paths = Dir.entries(directory_path).sort_by(&:downcase)
-    @entries = entry_paths.map do |relative_path|
-      absolute_path = File.join(directory_path, relative_path)
-      Entry.new(absolute_path)
-    end
-  end
-
-  def filter
-    @entries.reject!(&:secret?)
-  end
-
-  def reverse
-    @entries.reverse!
+  def initialize(entries, options)
+    entries.reject!(&:secret?) unless options[:dot_match]
+    entries.reverse! if options[:reverse]
+    @entries = entries
   end
 
   def display_long
@@ -51,15 +41,14 @@ class DirectoryDisplayer
   end
 
   def padding_status(attribute, padding_method)
-    allowed_methods = [:nlink, :uid, :gid, :size, :year_or_time]
-    unless allowed_methods.include?(attribute)
-      raise RuntimeError, "Method `#{attribute}' is not allowed."
-    end
+    allowed_methods = %i[nlink uid gid size year_or_time]
+    raise "Method `#{attribute}' is not allowed." unless allowed_methods.include?(attribute)
 
     max_length = @entries.map { |entry| entry.public_send(attribute).to_s.length }.max
     @entries.each do |entry|
       status = entry.public_send(attribute).to_s
-      padded_status = status.public_send(padding_method, max_length)
+      padded_status =
+        padding_method == :rjust ? status.rjust(max_length) : status.ljust(max_length)
       entry.public_send("#{attribute}=", padded_status)
     end
   end

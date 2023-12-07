@@ -60,9 +60,13 @@ def display_directory(pathname, options, display_method)
 end
 
 def build_directory_displayer(pathname, options)
-  directory_displayer = DirectoryDisplayer.new(pathname)
-  directory_displayer.filter unless options[:dot_match]
-  directory_displayer.reverse if options[:reverse]
+  entry_paths = Dir.entries(pathname).sort_by(&:downcase)
+  entries = entry_paths.map do |relative_path|
+    absolute_path = File.join(pathname, relative_path)
+    Entry.new(absolute_path)
+  end
+
+  directory_displayer = DirectoryDisplayer.new(entries, options)
   directory_displayer
 end
 

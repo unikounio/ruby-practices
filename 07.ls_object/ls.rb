@@ -55,7 +55,8 @@ end
 
 def display_directory(pathname, options, display_method)
   directory_displayer = build_directory_displayer(pathname, options)
-  directory_displayer.send(display_method)
+
+  display_method == :display_long ? directory_displayer.display_long : directory_displayer.display_short
 end
 
 def build_directory_displayer(pathname, options)

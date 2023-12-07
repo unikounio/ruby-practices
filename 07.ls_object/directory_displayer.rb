@@ -51,11 +51,16 @@ class DirectoryDisplayer
   end
 
   def padding_status(attribute, padding_method)
-    max_length = @entries.map { |entry| entry.send(attribute).to_s.length }.max
+    allowed_methods = [:nlink, :uid, :gid, :size, :year_or_time]
+    unless allowed_methods.include?(attribute)
+      raise RuntimeError, "Method `#{attribute}' is not allowed."
+    end
+
+    max_length = @entries.map { |entry| entry.public_send(attribute).to_s.length }.max
     @entries.each do |entry|
-      status = entry.send(attribute).to_s
-      padded_status = status.send(padding_method, max_length)
-      entry.send("#{attribute}=", padded_status)
+      status = entry.public_send(attribute).to_s
+      padded_status = status.public_send(padding_method, max_length)
+      entry.public_send("#{attribute}=", padded_status)
     end
   end
 

@@ -2,12 +2,13 @@
 
 require 'test/unit'
 require 'stringio'
-require_relative '../ls'
+require_relative '../ls_command'
 
 class LsTest < Test::Unit::TestCase
   def setup
     @parent_path = './test/sample'
     $stdout = StringIO.new
+    @ls_command = LsCommand.new
   end
 
   def set_directory_path_to_argv(*options)
@@ -30,7 +31,7 @@ class LsTest < Test::Unit::TestCase
       -rw-r--r-- 1 unikounio unikounio   13 Nov 24 00:02 sample4.txt
       -rw-r--r-- 1 unikounio unikounio   13 Nov 24 00:02 sample5.txt
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -47,7 +48,7 @@ class LsTest < Test::Unit::TestCase
       -rw-r--r-- 1 unikounio unikounio   13 Nov 24 00:02 sample4.txt
       -rw-r--r-- 1 unikounio unikounio   13 Nov 24 00:02 sample5.txt
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -61,7 +62,7 @@ class LsTest < Test::Unit::TestCase
       -rw-r--r-- 1 unikounio unikounio    7 Nov 24 00:02 sample1.txt
       drwxr-xr-x 2 unikounio unikounio 4096 Nov 24 00:38 directory1
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -78,14 +79,14 @@ class LsTest < Test::Unit::TestCase
       drwxr-xr-x 3 unikounio unikounio 4096 Nov 24 00:39 ..
       drwxr-xr-x 3 unikounio unikounio 4096 Nov 24 00:40 .
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
   def test_long_format_file
     set_file_path_to_argv('sample1.txt', '-l')
     text = "-rw-r--r-- 1 unikounio unikounio 7 Nov 23 22:53 sample1.txt\n"
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -95,7 +96,7 @@ class LsTest < Test::Unit::TestCase
       directory1        sample3.txt       sample5.txt#{'       '}
       sample1.txt       sample4.txt#{'                         '}
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -107,7 +108,7 @@ class LsTest < Test::Unit::TestCase
       ..                sample1.txt       sample5.txt#{'       '}
       .sample2.txt      sample3.txt#{'                         '}
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -117,7 +118,7 @@ class LsTest < Test::Unit::TestCase
       sample5.txt       sample3.txt       directory1#{'        '}
       sample4.txt       sample1.txt#{'                         '}
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
@@ -128,21 +129,21 @@ class LsTest < Test::Unit::TestCase
       sample4.txt       directory1        .#{'                 '}
       sample3.txt       .sample2.txt#{'                        '}
     ENTRIES
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
   def test_short_format_file
     set_file_path_to_argv('sample1.txt')
     text = "sample1.txt\n"
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 
   def test_no_such_file_or_directory
     set_file_path_to_argv('not_exist_entry')
     text = "ls: cannot access \'#{ARGV[0]}\': No such file or directory\n"
-    main
+    @ls_command.run
     assert_equal text, $stdout.string
   end
 end

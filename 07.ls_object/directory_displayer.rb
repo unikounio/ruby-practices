@@ -5,7 +5,6 @@ require_relative 'entry'
 class DirectoryDisplayer
   BLOCK_SIZE_ADJUSTMENT = 2
   MAX_COLUMNS = 3
-  WIDTH = 18
 
   def initialize(entries, options)
     entries.reject!(&:secret?) unless options[:dot_match]
@@ -73,17 +72,19 @@ class DirectoryDisplayer
   end
 
   def padding_entries(row)
+    max_bytesize = @entries.map { |entry| measure_bytesize(entry.name) }.max
+
     row.map do |entry|
       entry_name =
         entry == '' ? '' : entry.name
-      display_width = WIDTH - measure_bytesize(entry_name)
+      display_width = max_bytesize + 1
       entry_name.ljust(display_width, ' ')
     end
   end
 
   def measure_bytesize(entry_name)
     entry_name.each_char.sum do |char|
-      char.bytesize > 1 ? (char.bytesize - 2) : 0
+      char.bytesize == 1 ? 1 : 2
     end
   end
 end

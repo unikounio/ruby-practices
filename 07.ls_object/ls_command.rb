@@ -2,7 +2,7 @@
 
 require 'optparse'
 require 'pathname'
-require_relative 'directory_displayer'
+require_relative 'entries_displayer'
 require_relative 'entry'
 
 class LsCommand
@@ -41,8 +41,8 @@ class LsCommand
       display_directory(pathname, options, :display_long)
     elsif pathname.file?
       entry = Entry.new(pathname)
-      entry.setup_long_format
-      puts entry.build_long_format
+      entries_displayer = EntriesDisplayer.new([entry])
+      entries_displayer.display_long_entries
     end
   end
 
@@ -55,18 +55,18 @@ class LsCommand
   end
 
   def display_directory(pathname, options, display_method)
-    directory_displayer = build_directory_displayer(pathname, options)
+    entries_displayer = build_entries_displayer(pathname, options)
 
-    display_method == :display_long ? directory_displayer.display_long : directory_displayer.display_short
+    display_method == :display_long ? entries_displayer.display_long : entries_displayer.display_short
   end
 
-  def build_directory_displayer(pathname, options)
+  def build_entries_displayer(pathname, options)
     entry_paths = Dir.entries(pathname).sort_by(&:downcase)
     entries = entry_paths.map do |relative_path|
       absolute_path = File.join(pathname, relative_path)
       Entry.new(absolute_path)
     end
 
-    DirectoryDisplayer.new(entries, options)
+    EntriesDisplayer.new(entries, options)
   end
 end

@@ -97,8 +97,8 @@ class LsTest < Test::Unit::TestCase
   def test_short_format_directory
     set_directory_path_to_argv
     text = <<~ENTRIES
-    directory1               sample3.txt              sample5.txt              
-    sample1.txt              sample4.txt              ディレクトリディレクトリ             
+      directory1               sample3.txt              sample5.txt#{'              '}
+      sample1.txt              sample4.txt              ディレクトリディレクトリ#{'             '}
     ENTRIES
     @ls_command.run
     assert_equal text, $stdout.string
@@ -108,9 +108,9 @@ class LsTest < Test::Unit::TestCase
     set_directory_path_to_argv('-a')
     ARGV.push('-a')
     text = <<~ENTRIES
-    .                        directory1               sample4.txt              
-    ..                       sample1.txt              sample5.txt              
-    .sample2.txt             sample3.txt              ディレクトリディレクトリ             
+      .                        directory1               sample4.txt#{'              '}
+      ..                       sample1.txt              sample5.txt#{'              '}
+      .sample2.txt             sample3.txt              ディレクトリディレクトリ#{'             '}
     ENTRIES
     @ls_command.run
     assert_equal text, $stdout.string
@@ -119,8 +119,8 @@ class LsTest < Test::Unit::TestCase
   def test_short_format_directory_with_reverse
     set_directory_path_to_argv('-r')
     text = <<~ENTRIES
-    ディレクトリディレクトリ             sample4.txt              sample1.txt              
-    sample5.txt              sample3.txt              directory1               
+      ディレクトリディレクトリ             sample4.txt              sample1.txt#{'              '}
+      sample5.txt              sample3.txt              directory1#{'               '}
     ENTRIES
     @ls_command.run
     assert_equal text, $stdout.string
@@ -129,9 +129,9 @@ class LsTest < Test::Unit::TestCase
   def test_short_format_directory_with_dotmatch_and_reverse
     set_directory_path_to_argv('-a', '-r')
     text = <<~ENTRIES
-    ディレクトリディレクトリ             sample3.txt              .sample2.txt             
-    sample5.txt              sample1.txt              ..                       
-    sample4.txt              directory1               .                        
+      ディレクトリディレクトリ             sample3.txt              .sample2.txt#{'             '}
+      sample5.txt              sample1.txt              ..#{'                       '}
+      sample4.txt              directory1               .#{'                        '}
     ENTRIES
     @ls_command.run
     assert_equal text, $stdout.string

@@ -26,9 +26,7 @@ class Entry
     '7' => 'rwx'
   }.freeze
 
-  attr_reader :path, :name, :lstat
-
-  attr_accessor :nlink, :uid, :gid, :size, :year_or_time
+  attr_reader :path, :name
 
   def initialize(path)
     @path = path
@@ -39,31 +37,48 @@ class Entry
     name.start_with? '.'
   end
 
-  def setup_long_format
-    @lstat = File.lstat(path)
-    @mode = create_mode
-    @nlink = @lstat.nlink.to_s
-    @uid = Etc.getpwuid(@lstat.uid).name
-    @gid = Etc.getgrgid(@lstat.gid).name
-    @size = create_size
-    @mtime = create_mtime
-    @basename = create_basename
+  def lstat
+    File.lstat(path)
   end
 
-  def build_long_format
-    [@mode, @nlink, @uid, @gid, @size, @mtime, @basename].join(' ')
-  end
-
-  private
-
-  def create_mode
-    raw_mode = @lstat.mode.to_s(8).rjust(MODE_LENGTH, '0')
+  def mode
+    raw_mode = lstat.mode.to_s(8).rjust(MODE_LENGTH, '0')
     [FILETYPE[raw_mode[0..1]], convert_permissions(raw_mode)].join
   end
 
-  def create_size
-    @lstat.size.to_s
+  def nlink
+    lstat.nlink.to_s
   end
+
+  def uid
+    Etc.getpwuid(lstat.uid).name
+  end
+
+  def gid
+    Etc.getgrgid(lstat.gid).name
+  end
+
+  def size
+    lstat.size.to_s
+  end
+
+  def month_and_day
+    mtime.strftime('%b %e')
+  end
+
+  def year_or_time
+    if Date.parse(mtime.to_s) > Date.today << 6
+      mtime.strftime('%H:%M')
+    else
+      mtime.strftime('%Y')
+    end
+  end
+
+  def basename
+    File.symlink?(path) ? "#{File.basename(path)} -> #{File.readlink(path)}" : File.basename(path)
+  end
+
+  private
 
   def convert_permissions(raw_mode)
     permissions = raw_mode.gsub(/\d{3}$/) do |raw_permissions|
@@ -83,19 +98,7 @@ class Entry
     end
   end
 
-  def create_mtime
-    raw_mtime = @lstat.mtime
-    month_and_day = raw_mtime.strftime('%b %e')
-    @year_or_time =
-      if Date.parse(raw_mtime.to_s) > Date.today << 6
-        raw_mtime.strftime('%H:%M')
-      else
-        raw_mtime.strftime('%Y')
-      end
-    [month_and_day, @year_or_time].join(' ')
-  end
-
-  def create_basename
-    File.symlink?(path) ? "#{File.basename(path)} -> #{File.readlink(path)}" : File.basename(path)
+  def mtime
+    lstat.mtime
   end
 end

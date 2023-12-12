@@ -2,21 +2,35 @@
 
 require_relative 'entry'
 
-class DirectoryDisplayer
+class EntriesDisplayer
   BLOCK_SIZE_ADJUSTMENT = 2
   MAX_COLUMNS = 3
 
-  def initialize(entries, options)
+  def initialize(entries, options = {})
     entries.reject!(&:secret?) unless options[:dot_match]
     entries.reverse! if options[:reverse]
     @entries = entries
   end
 
   def display_long
-    @entries.each(&:setup_long_format)
     display_total_blocks
-    padding_statuses
     display_long_entries
+  end
+
+  def display_long_entries
+    nlinks_max_length = measure_max_length(:nlink)
+    uids_max_length = measure_max_length(:uid)
+    gids_max_length = measure_max_length(:gid)
+    sizes_max_length = measure_max_length(:size)
+    years_or_times_max_length = measure_max_length(:year_or_time)
+    @entries.each do |entry|
+      padded_nlink = entry.nlink.rjust(nlinks_max_length)
+      padded_uid = entry.uid.ljust(uids_max_length)
+      padded_gid = entry.gid.ljust(gids_max_length)
+      padded_size = entry.size.rjust(sizes_max_length)
+      padded_year_or_time = entry.year_or_time.rjust(years_or_times_max_length)
+      puts [entry.mode, padded_nlink, padded_uid, padded_gid, padded_size, entry.month_and_day, padded_year_or_time, entry.basename].join(' ')
+    end
   end
 
   def display_short
@@ -31,31 +45,11 @@ class DirectoryDisplayer
     puts "total #{total_blocks}"
   end
 
-  def padding_statuses
-    padding_status(:nlink, :rjust)
-    padding_status(:uid, :ljust)
-    padding_status(:gid, :ljust)
-    padding_status(:size, :rjust)
-    padding_status(:year_or_time, :rjust)
-  end
-
-  def padding_status(attribute, padding_method)
+  def measure_max_length(attribute)
     allowed_methods = %i[nlink uid gid size year_or_time]
     raise "Method `#{attribute}' is not allowed." unless allowed_methods.include?(attribute)
 
-    max_length = @entries.map { |entry| entry.public_send(attribute).to_s.length }.max
-    @entries.each do |entry|
-      status = entry.public_send(attribute).to_s
-      padded_status =
-        padding_method == :rjust ? status.rjust(max_length) : status.ljust(max_length)
-      entry.public_send("#{attribute}=", padded_status)
-    end
-  end
-
-  def display_long_entries
-    @entries.each do |entry|
-      puts entry.build_long_format
-    end
+    @entries.map { |entry| entry.public_send(attribute).to_s.length }.max
   end
 
   def create_padded_columns

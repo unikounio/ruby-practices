@@ -9,14 +9,7 @@ lowercase_words = words.map do |word|
   word.downcase
 end
 
-counted_words = {}
-lowercase_words.each do |word|
-  if counted_words.key?(word)
-    counted_words[word] = counted_words[word] + 1
-  else
-    counted_words[word] = 1
-  end
-end
+counted_words = lowercase_words.tally
 
 sorted_words = counted_words.sort_by {|word, count| count }.reverse.to_h
 

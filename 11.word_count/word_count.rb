@@ -4,22 +4,22 @@ Ruby is an interpreted, high-level, general-purpose programming language. It was
 Ruby is dynamically typed and uses garbage collection and just-in-time compilation. It supports multiple programming paradigms, including procedural, object-oriented, and functional programming. According to the creator, Ruby was influenced by Perl, Smalltalk, Eiffel, Ada, BASIC, Java, and Lisp.
 TEXT
 
-arr = text.scan(/[A-Za-z0-9-]+/)
-arr2 = arr.map do |s|
-  s.downcase
+words = text.scan(/[A-Za-z0-9-]+/)
+lowercase_words = words.map do |word|
+  word.downcase
 end
 
-h = {}
-arr2.each do |s|
-  if h.key?(s)
-    h[s] = h[s] + 1
+counted_words = {}
+lowercase_words.each do |word|
+  if counted_words.key?(word)
+    counted_words[word] = counted_words[word] + 1
   else
-    h[s] = 1
+    counted_words[word] = 1
   end
 end
 
-sorted_h = h.sort_by {|key, value| value }.reverse.to_h
+sorted_words = counted_words.sort_by {|word, count| count }.reverse.to_h
 
-sorted_h.each do |key, value|
-  puts "#{key}：#{value}回"
+sorted_words.each do |word, count|
+  puts "#{word}：#{count}回"
 end

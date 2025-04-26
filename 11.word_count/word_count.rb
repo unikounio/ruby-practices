@@ -11,7 +11,7 @@ end
 
 counted_words = lowercase_words.tally
 
-sorted_words = counted_words.sort_by {|word, count| count }.reverse.to_h
+sorted_words = counted_words.sort_by {|_, count| -count }
 
 sorted_words.each do |word, count|
   puts "#{word}：#{count}回"

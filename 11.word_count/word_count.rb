@@ -6,7 +6,7 @@ TEXT
 
 words = text.downcase.scan(/[\w-]+/)
 counted_words = words.tally
-sorted_words = counted_words.sort_by {|_, count| -count }
+sorted_words = counted_words.sort_by {|word, count| [-count, word] }
 
 sorted_words.each do |word, count|
   puts "#{word}：#{count}回"

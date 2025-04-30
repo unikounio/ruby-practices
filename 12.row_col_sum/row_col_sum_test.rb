@@ -21,5 +21,15 @@ class RowColSumTest < Minitest::Test
     ]
 
     assert_equal expected, row_col_sum(input)
+
+    expected_input = [
+      [9, 85, 92, 20],
+      [68, 25, 80, 55],
+      [43, 96, 71, 73],
+      [43, 19, 20, 87],
+      [95, 66, 73, 62]
+    ]
+
+    assert_equal expected_input, input
   end
 end

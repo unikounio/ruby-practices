@@ -4,9 +4,7 @@ def row_col_sum(input)
     [*row, row_total]
   end
 
-  col_totals = result.transpose.map do |col|
-    col.sum
-  end
+  col_totals = result.transpose.map(&:sum)
 
   [*result, col_totals]
 end

@@ -5,9 +5,8 @@ def row_col_sum(input)
     row_copy << row_total
   end
 
-  col_totals = []
-  result.transpose.each do |col|
-    col_totals << col.sum
+  col_totals = result.transpose.map do |col|
+    col.sum
   end
 
   result << col_totals

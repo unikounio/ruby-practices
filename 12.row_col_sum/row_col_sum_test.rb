@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require_relative './row_col_sum'
 
-class FizzBuzzTest < Minitest::Test
+class RowColSumTest < Minitest::Test
   def test_row_col_sum
     input = [
       [9, 85, 92, 20],
@@ -19,7 +19,7 @@ class FizzBuzzTest < Minitest::Test
       [95, 66, 73, 62, 296],
       [258, 291, 336, 297, 1182]
     ]
-    
+
     assert_equal expected, row_col_sum(input)
   end
 end

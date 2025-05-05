@@ -20,22 +20,22 @@ def keitai_message(input)
     pattern = patterns[i]
     case i
     when 1
-      if s.count('1-9') % 5 == 0
+      if s.length % 5 == 0
         result += pattern[4]
       else
-        result += pattern[s.count('1-9') % 5 - 1]
+        result += pattern[s.length % 5 - 1]
       end
     when 9
-      if s.count('1-9') % 4 == 0
+      if s.length % 4 == 0
         result += pattern[3]
       else
-        result += pattern[s.count('1-9') % 4 - 1]
+        result += pattern[s.length % 4 - 1]
       end
     else
-      if s.count('1-9') % 3 == 0
+      if s.length % 3 == 0
         result += pattern[2]
       else
-        result += pattern[s.count('1-9') % 3 - 1]
+        result += pattern[s.length % 3 - 1]
       end
     end
   end

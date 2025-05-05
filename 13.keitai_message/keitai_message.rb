@@ -18,26 +18,8 @@ def keitai_message(input)
   testcase.each do |s|
     i = s[0].to_i
     pattern = PATTERNS[i]
-    case i
-    when 1
-      if s.length % 5 == 0
-        result += pattern[4]
-      else
-        result += pattern[s.length % 5 - 1]
-      end
-    when 7, 9
-      if s.length % 4 == 0
-        result += pattern[3]
-      else
-        result += pattern[s.length % 4 - 1]
-      end
-    else
-      if s.length % 3 == 0
-        result += pattern[2]
-      else
-        result += pattern[s.length % 3 - 1]
-      end
-    end
+    index = (s.length - 1) % pattern.length
+    result += pattern[index]
   end
 
   result

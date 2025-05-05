@@ -36,4 +36,11 @@ class KeitaiMessageTest < Minitest::Test
 
     assert_equal expected, keitai_message(input)
   end
+
+  def test_keitai_message_case6
+    input = '440330555055506660110111110906660777777705550301110'
+    expected = 'hello, world!'
+
+    assert_equal expected, keitai_message(input)
+  end
 end

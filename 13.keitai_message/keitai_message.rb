@@ -25,7 +25,7 @@ def keitai_message(input)
       else
         result += pattern[s.length % 5 - 1]
       end
-    when 9
+    when 7, 9
       if s.length % 4 == 0
         result += pattern[3]
       else

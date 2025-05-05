@@ -43,4 +43,11 @@ class KeitaiMessageTest < Minitest::Test
 
     assert_equal expected, keitai_message(input)
   end
+
+  def test_keitai_message_case7
+    input = '5'
+    expected = 'j'
+
+    assert_equal expected, keitai_message(input)
+  end
 end

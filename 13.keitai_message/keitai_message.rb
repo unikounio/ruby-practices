@@ -2,8 +2,8 @@ def keitai_message(input)
   testcase = input.split(/0+/)
   testcase.delete('')
 
-  patterns =
-  { 1 => ['\'', ',', '!', '?', ' '],
+  patterns = {
+    1 => %w[' , ! ? \ ],
     2 => %w[a b c],
     3 => %w[d e f],
     4 => %w[g h i],

@@ -10,7 +10,7 @@ def serial_search(input)
   first_date = Date.new(year)
   manufactured = first_date + (days - 1)
 
-  factory, order = (1..499).include?(production) ? ['カラマズー', production] : ['ナッシュビル', production - 500]
+  factory, order = (1..499).cover?(production) ? ['カラマズー', production] : ['ナッシュビル', production - 500]
 
   "#{year}年#{manufactured.month}月#{manufactured.day}日に#{factory}・ファクトリーで#{order}番目に製造されたギターです"
 end

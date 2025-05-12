@@ -5,7 +5,6 @@ def serial_search(input)
   d = input[1..3].to_i
   x = input[5..7].to_i
 
-
   first_date = Date.new(y)
   m_date = first_date + (d - 1)
 

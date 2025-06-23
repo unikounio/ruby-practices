@@ -3,7 +3,7 @@
 require 'date'
 
 def serial_search(input)
-  year = 1900 + (input[0] + input[4]).to_i
+  year = "19#{input[0]}#{input[4]})".to_i
   days = input[1..3].to_i
   production = input[5..7].to_i
 

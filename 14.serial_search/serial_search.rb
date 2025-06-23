@@ -14,5 +14,5 @@ def serial_search(input)
 
   factory, order = production_no < NASHVILLE_SERIAL_START ? ['カラマズー', production_no] : ['ナッシュビル', production_no - NASHVILLE_SERIAL_START]
 
-  "#{year}年#{manufactured_on.month}月#{manufactured_on.day}日に#{factory}・ファクトリーで#{order}番目に製造されたギターです"
+  manufactured_on.strftime("%Y年%-m月%-d日") + "に#{factory}・ファクトリーで#{order}番目に製造されたギターです"
 end

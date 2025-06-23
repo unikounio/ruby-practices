@@ -14,13 +14,10 @@ def keitai_message(input)
   testcase = input.split(/0+/)
   testcase.delete('')
 
-  result = ''
-  testcase.each do |s|
+  testcase.map do |s|
     i = s[0].to_i
     pattern = PATTERNS[i]
     index = (s.length - 1) % pattern.length
-    result += pattern[index]
-  end
-
-  result
+    pattern[index]
+  end.join
 end

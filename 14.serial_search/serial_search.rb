@@ -12,7 +12,7 @@ def serial_search(input)
   beginning_of_year = Date.new(year)
   manufactured_on = beginning_of_year + days - 1
 
-  factory, order = (1..499).cover?(production_no) ? ['カラマズー', production_no] : ['ナッシュビル', production_no - 500]
+  factory, order = production_no < NASHVILLE_SERIAL_START ? ['カラマズー', production_no] : ['ナッシュビル', production_no - NASHVILLE_SERIAL_START]
 
   "#{year}年#{manufactured_on.month}月#{manufactured_on.day}日に#{factory}・ファクトリーで#{order}番目に製造されたギターです"
 end
